@@ -228,14 +228,14 @@
             (reset! serialized (into [] (serdes.extract/extract {})))))
 
         (testing "the serialized form is as desired"
-          (is (= {:type  :query
-                  :query {:source-table ["my-db" nil "customers"]
-                          :filter       [:>= [:field ["my-db" nil "customers" "age"] nil] 18]
-                          :aggregation  [[:count]]}
-                  :database "my-db"}
-                 (->> (by-model @serialized "Card")
-                      first
-                      :dataset_query))))
+          (let [card (first (by-model @serialized "Card"))]
+            (is (= {:type  :query
+                    :query {:source-table ["my-db" nil "customers"]
+                            :filter       [:>= [:field ["my-db" nil "customers" "age"] nil] 18]
+                            :aggregation  [[:count]]
+                            :aggregation-idents {(str "aggregation_" (:entity_id card) "@0__0") 0}}
+                    :database "my-db"}
+                   (:dataset_query card)))))
 
         (testing "deserializing adjusts the IDs properly"
           (ts/with-db dest-db
@@ -265,7 +265,8 @@
               (is (= {:type     :query
                       :query    {:source-table (:id @table1d)
                                  :filter       [:>= [:field (:id @field1d) nil] 18]
-                                 :aggregation  [[:count]]}
+                                 :aggregation  [[:count]]
+                                 :aggregation-idents {(str "aggregation_" (:entity_id @card1d) "@0__0") 0}}
                       :database (:id @db1d)}
                      (:dataset_query @card1d))))))))))
 

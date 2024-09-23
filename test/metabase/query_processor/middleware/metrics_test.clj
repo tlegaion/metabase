@@ -525,6 +525,14 @@
                                                (lib/aggregate (lib/count)))))
                 (mt/rows (qp/process-query query))))))))
 
+(comment
+  (let [mp (lib.metadata.jvm/application-database-metadata-provider (mt/id))
+        source-query (-> (lib/query mp (lib.metadata/table mp (mt/id :products)))
+                         (lib/aggregate (lib/count)))]
+    source-query
+    )
+  )
+
 (deftest ^:parallel available-metrics-test
   (let [mp (lib.metadata.jvm/application-database-metadata-provider (mt/id))
         source-query (-> (lib/query mp (lib.metadata/table mp (mt/id :products)))

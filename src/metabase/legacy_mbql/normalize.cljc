@@ -387,9 +387,10 @@
    ;; don't normalize native queries
    :native          normalize-native-query
    :query           {:aggregation        normalize-ag-clause-tokens
-                     :aggregation-idents identity
+                     :aggregation-idents (fn [m]
+                                           (update-keys m #(cond-> % (string? %) parse-long)))
                      :expressions        normalize-expressions-tokens
-                     :expression-idents  identity
+                     :expression-idents  identity ;; Keep these as string -> string maps
                      :order-by           normalize-order-by-tokens
                      :source-query       normalize-source-query
                      :source-metadata    {::sequence normalize-source-metadata}

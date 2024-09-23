@@ -42,8 +42,12 @@
 (def ^{:arglists '([metric]) :doc "Is metric a saved metric?"} saved-metric?
   (partial mbql.u/is-clause? :metric))
 
-(def ^{:arglists '([metric]) :doc "Is this a custom expression?"} custom-expression?
-  (partial mbql.u/is-clause? :aggregation-options))
+(defn custom-expression?
+  "Is this a custom expression?"
+  [metric]
+  (and (mbql.u/is-clause? :aggregation-options metric)
+       (let [[_agg-opts _inner opts] metric]
+         (-> opts (dissoc :ident) not-empty boolean))))
 
 (def ^{:arglists '([metric]) :doc "Is this an adhoc metric?"} adhoc-metric?
   (complement (some-fn saved-metric? custom-expression?)))
@@ -66,6 +70,7 @@
   "Return `Field` instance for a given ID or name in the context of root."
   [{{result-metadata :result_metadata} :source, :as root}
    field-id-or-name-or-clause :- [:or ms/PositiveInt ms/NonBlankString [:fn mbql.preds/Field?]]]
+  #_(prn "->field" result-metadata field-id-or-name-or-clause)
   (let [id-or-name (if (sequential? field-id-or-name-or-clause)
                      (field-reference->id field-id-or-name-or-clause)
                      field-id-or-name-or-clause)]
