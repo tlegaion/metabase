@@ -45,24 +45,17 @@
 (defn metric->description
   "Return a description for the metric."
   [root aggregation-clause]
-  #_(prn "metric->description" aggregation-clause)
   (join-enumeration
    (for [metric (if (sequential? (first aggregation-clause))
                   aggregation-clause
                   [aggregation-clause])]
-     (do
-       #_(prn "metric" metric)
-       (if (magic.util/adhoc-metric? metric)
-         (let [inner (if (= (first metric) :aggregation-options)
-                       (second metric)
-                       metric)]
-           #_(prn "adhoc" inner (some->> inner second (magic.util/->field root)))
-           (tru "{0} of {1}" (metric-name inner) (or (some->> inner
-                                                             second
-                                                             (magic.util/->field root)
-                                                             :display_name)
-                                                    (source-name root))))
-         (do #_(prn "named" metric) (metric-name metric)))))))
+     (if (magic.util/adhoc-metric? metric)
+       (tru "{0} of {1}" (metric-name metric) (or (some->> metric
+                                                           second
+                                                           (magic.util/->field root)
+                                                           :display_name)
+                                                  (source-name root)))
+       (metric-name metric)))))
 
 (defn question-description
   "Generate a description for the question."
