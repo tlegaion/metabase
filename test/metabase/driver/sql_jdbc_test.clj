@@ -105,6 +105,7 @@
                       :type     :query
                       :query    {:source-table (mt/id table)
                                  :aggregation  [[:count]]
+                                 :aggregation-idents {0 "JS5AsH7dKIYJgw6OhNV1a"}
                                  :filter       filter-clause}}
         native-query (qp.compile/compile-with-inline-parameters query)]
     (testing (format "\nnative query =\n%s" (u/pprint-to-str native-query))

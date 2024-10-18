@@ -23,13 +23,13 @@
    :type     :query
    :query    {:source-table 1000
               :filter       filter-clause
-              :breakout     [[:field 17 nil]]}})
+              :breakout     [[:field 17 {:ident "ykVWKTJZBTEZSjC3Li0ep"}]]}})
 
 (defn- query-with-parameters [& parameters]
   {:database   1
    :type       :query
    :query      {:source-table 1000
-                :breakout     [[:field 17 nil]]}
+                :breakout     [[:field 17 {:ident "ykVWKTJZBTEZSjC3Li0ep"}]]}
    :parameters (vec parameters)})
 
 (deftest ^:parallel basic-test
@@ -413,14 +413,15 @@
               (ffirst
                (mt/rows
                 (mt/process-query
-                 {:database   (mt/id)
-                  :type       :query
-                  :query      {:source-table (mt/id :venues)
-                               :aggregation  [[:count]]}
-                  :parameters [(merge
-                                {:type   :category
-                                 :target [:dimension [:field (mt/id :venues :price) nil]]}
-                                param)]}))))]
+                 (mt/query nil
+                  {:database   (mt/id)
+                   :type       :query
+                   :query      {:source-table (mt/id :venues)
+                                :aggregation  [[:count]]}
+                   :parameters [(merge
+                                 {:type   :category
+                                  :target [:dimension [:field (mt/id :venues :price) nil]]}
+                                 param)]})))))]
       (doseq [[price expected] {1 22
                                 2 59}]
         (testing (format ":value = %d" price)

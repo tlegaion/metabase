@@ -262,9 +262,12 @@
    :type     :query
    :query    {:source-table (str "card__" (u/the-id card-or-card-id))
               :aggregation  [[:count]]
+              :aggregation-idents {0 "2c0dCNgDVQBAbT-6uRAg4"}
               :breakout     [[:field
                               (mt/format-name :latitude)
-                              {:base-type :type/Float, :binning {:strategy :num-bins, :num-bins 20}}]]}})
+                              {:base-type :type/Float
+                               :ident     "X4d2kkCwpvwye1YFyIwnF"
+                               :binning   {:strategy :num-bins, :num-bins 20}}]]}})
 
 (deftest ^:parallel bin-nested-queries-test
   (mt/test-drivers (mt/normal-drivers-with-feature :binning :nested-queries)

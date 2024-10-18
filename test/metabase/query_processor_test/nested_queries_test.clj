@@ -216,6 +216,8 @@
                                                               [:aggregation-options
                                                                [:max $rating]
                                                                {:name "max"}]]
+                                                :aggregation-idents {0 "VghddL-up6ZVkpUNkE9H_"
+                                                                     1 "O7xQpRu8mQfVAnjroblU2"}
                                                 :breakout    [$category]
                                                 :order-by    [[:asc $category]]})])
             (is (partial= {:data {:cols [{:name "sum" :display_name "Sum of Sum of Price"}
@@ -234,7 +236,9 @@
                                                                                 {:name "sum"}]
                                                                                [:aggregation-options
                                                                                 [:count]
-                                                                                {:name "count"}]]}}
+                                                                                {:name "count"}]]
+                                                                :aggregation-idents {0 "VghddL-up6ZVkpUNkE9H_"
+                                                                                     1 "q0awK8v8lIp1iW_ZhSS_E"}}}
                                                     (when dataset?
                                                       {:info {:metadata/model-metadata
                                                               (:result-metadata (lib.metadata/card (qp.store/metadata-provider) 1))}}))))))))))))
@@ -272,12 +276,14 @@
                                              {:fields [$id]
                                               :joins  [{:source-table $$products
                                                         :alias        "P"
+                                                        :ident        "Zh421ECf3-b2l2Ml7s_3P"
                                                         :fields       [&P.products.id &P.products.ean]
                                                         :condition    [:= $product_id &P.products.id]}]})
                                            (mt/mbql-query orders
                                              {:fields [$id]
                                               :joins  [{:source-table "card__1"
                                                         :alias        "RP"
+                                                        :ident        "FGuqyLkhyOtYbUCeFSpfl"
                                                         :fields       [&RP.reviews.id &RP.products.id &RP.products.ean]
                                                         :condition    [:= $product_id &RP.products.id]}]})])
           (is (=? {:status :completed}
@@ -298,6 +304,7 @@
                    (query-with-source-card 1
                                            (mt/$ids venues
                                              {:aggregation [:count]
+                                              :aggregation-idents {0 "Bw1J97euPTDVuy8mgoo-i"}
                                               :breakout    [$price]})))))))))))
 
 (defmethod driver/database-supports? [::driver/driver ::grouped-expression-in-card-test]
@@ -341,6 +348,7 @@
                 (qp/process-query
                  (query-with-source-card 1 (mt/$ids venues
                                              {:aggregation [:count]
+                                              :aggregation-idents {0 "ust_Ayl8jsqV1KItGKcyb"}
                                               :breakout    [*price]})))))))]
       (is (=? (breakout-results :has-source-metadata? false :native-source? true)
               (run-native-query native-sub-query))
@@ -622,6 +630,7 @@
                   (query-with-source-card 1
                                           (mt/$ids venues
                                             {:aggregation [[:count]]
+                                             :aggregation-idents {0 "YUjZLg010UJ3XVWXbq67A"}
                                              :breakout    [$price]}))))))))))
 
 (deftest ^:parallel correct-column-metadata-test-3
@@ -641,6 +650,7 @@
                (qp/process-query
                 (query-with-source-card 1 (mt/$ids checkins
                                             {:aggregation [[:count]]
+                                             :aggregation-idents {0 "vX12AxUR50eQNFNZgdG0m"}
                                              :breakout    [!day.*date]})))))))))
 
 (defmethod driver/database-supports? [::driver/driver ::breakout-year-test]
@@ -703,6 +713,7 @@
                (-> (query-with-source-card 1
                                            (mt/$ids :checkins
                                              {:aggregation [[:count]]
+                                              :aggregation-idents {0 "D8bJ476ZFWsYM5G159Ndc"}
                                               :filter      [:= !quarter.*date "2014-01-01T08:00:00.000Z"]
                                               :breakout    [!month.*date]}))
                    qp/process-query
@@ -717,6 +728,7 @@
                (-> (query-with-source-card 1
                                            (mt/$ids checkins
                                              {:aggregation [[:count]]
+                                              :aggregation-idents {0 "wbKuCKOulARRSj0a1yg55"}
                                               :breakout    [!week.*date]
                                               :filter      [:between !week.*date "2014-02-01T00:00:00-08:00" "2014-05-01T00:00:00-07:00"]}))
                    (qp/process-query)
@@ -739,7 +751,8 @@
                 [int]
                 (qp/process-query
                  (query-with-source-card 1
-                                         {:aggregation [:count]})))))))))
+                                         {:aggregation [:count]
+                                          :aggregation-idents {0 "ApWqC4pOyxysqqeiuiPeS"}})))))))))
 
 (deftest ^:parallel card-perms-test
   (testing "perms for a Card with a SQL source query\n"

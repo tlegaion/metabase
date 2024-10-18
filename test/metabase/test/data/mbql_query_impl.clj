@@ -4,6 +4,7 @@
    [clojure.string :as str]
    [clojure.test :refer :all]
    [clojure.walk :as walk]
+   [metabase.util :as u]
    [toucan2.core :as t2]))
 
 (set! *warn-on-reflection* true)
@@ -161,6 +162,34 @@
   something like a function call or dynamic variable."
   [source-table-symb-or-nil body]
   (walk/postwalk (partial parse-token-by-sigil source-table-symb-or-nil) body))
+
+(defn populate-idents
+  "Internal impl fn for `data/mbql-query` macro.
+
+  Fills in `:aggregation-idents` and `:expression-idents` where missing."
+  [{:keys [aggregation aggregation-idents expressions expression-idents joins source-query] :as inner-query}]
+  #_(clojure.pprint/pprint inner-query)
+  (let [fresh-expr-idents (into {} (map (juxt name (fn [_] (u/generate-nano-id))))
+                                (keys expressions))
+        agg-idents        (into {} (map-indexed (fn [i _agg]
+                                                  [i (or (get aggregation-idents i)
+                                                         (u/generate-nano-id))]))
+                                (cond-> aggregation
+                                  (not (seqable? aggregation)) vector))]
+    #_(clojure.pprint/pprint expression-idents)
+    (cond-> inner-query
+      source-query (update :source-query populate-idents)
+      joins        (update :joins #(mapv populate-idents %))
+      expressions  (assoc :expression-idents (merge fresh-expr-idents expression-idents))
+      aggregation  (assoc :aggregation-idents agg-idents))))
+
+(defn wrap-populate-idents
+  "Internal impl fn for `data/mbql-query` macro.
+
+  Wraps with a call to [[populate-idents]] to ensure `:aggregation-idents` and `:expression-idents` exist when there
+  are aggregations or expressions on a stage."
+  [inner-query]
+  `(populate-idents ~inner-query))
 
 (defn wrap-inner-query
   "Internal impl fn of `data/mbql-query` macro."

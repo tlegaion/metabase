@@ -388,7 +388,9 @@
    :native          normalize-native-query
    :query           {:aggregation        normalize-ag-clause-tokens
                      :aggregation-idents (fn [m]
-                                           (update-keys m #(cond-> % (string? %) parse-long)))
+                                           (update-keys m #(cond-> %
+                                                             (string? %) parse-long
+                                                             (keyword? %) (-> name parse-long))))
                      :expressions        normalize-expressions-tokens
                      :expression-idents  identity ;; Keep these as string -> string maps
                      :order-by           normalize-order-by-tokens

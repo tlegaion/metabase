@@ -736,6 +736,9 @@
                                                       [:aggregation-options
                                                        [:max $rating]
                                                        {:name "max"}]]
+
+                                                     :aggregation-idents {0 "Sr2tHGO5diWeWKIsu5UnT"
+                                                                          1 "N7UdNOmDtnbyU2G_Mj_Qf"}
                                                      :breakout     [$category]
                                                      :order-by     [[:asc $category]]}})])
       (let [query (qp.preprocess/preprocess
@@ -750,6 +753,8 @@
                                      [:aggregation-options
                                       [:count]
                                       {:name "count"}]]
+                      :aggregation-idents {0 "Sr2tHGO5diWeWKIsu5UnT"
+                                           1 "N7UdNOmDtnbyU2G_Mj_Qf"}
                       :limit        1}))]
         (is (= ["Sum of Sum of Price" "Count"]
                (->> (add-column-info query {})

@@ -71,6 +71,7 @@
     (is (= (lib.tu.macros/mbql-query venues
              {:source-query    {:source-table $$venues
                                 :aggregation  [[:count]]
+                                :aggregation-idents {0 "3pc4TEaHjG_OCP8LyJXOQ"}
                                 :breakout     [$price]}
               :source-metadata (concat
                                 (venues-source-metadata :price)
@@ -83,6 +84,7 @@
             (lib.tu.macros/mbql-query venues
               {:source-query {:source-table $$venues
                               :aggregation  [[:count]]
+                              :aggregation-idents {0 "3pc4TEaHjG_OCP8LyJXOQ"}
                               :breakout     [$price]}}))))))
 
 (deftest ^:parallel basic-aggregation-with-field-test
@@ -90,6 +92,7 @@
     (is (= (lib.tu.macros/mbql-query venues
              {:source-query    {:source-table $$venues
                                 :aggregation  [[:avg $id]]
+                                :aggregation-idents {0 "i-fZVvPfkv0eklKrUko3Y"}
                                 :breakout     [$price]}
               :source-metadata (concat
                                 (venues-source-metadata :price)
@@ -103,6 +106,7 @@
             (lib.tu.macros/mbql-query venues
               {:source-query {:source-table $$venues
                               :aggregation  [[:avg $id]]
+                              :aggregation-idents {0 "i-fZVvPfkv0eklKrUko3Y"}
                               :breakout     [$price]}}))))))
 
 (defn- source-metadata [query]
@@ -116,6 +120,7 @@
                                   :aggregation  [[:aggregation-options
                                                   [:avg $id]
                                                   {:name "some_generated_name", :display-name "My Cool Ag"}]]
+                                  :aggregation-idents {0  "XJN8qv20HdANRrEyoemzR"}
                                   :breakout     [$price]}
                 :source-metadata (concat
                                   (venues-source-metadata :price)
@@ -131,6 +136,7 @@
                                 :aggregation  [[:aggregation-options
                                                 [:avg $id]
                                                 {:name "some_generated_name", :display-name "My Cool Ag"}]]
+                                :aggregation-idents {0  "XJN8qv20HdANRrEyoemzR"}
                                 :breakout     [$price]}})))))))
 
 (deftest ^:parallel named-aggregations-name-only-test
@@ -226,7 +232,8 @@
                         (venues-source-metadata :price)
                         (let [[count-col] (results-metadata (qp.preprocess/query->expected-cols
                                                              (lib.tu.macros/mbql-query venues
-                                                               {:aggregation [[:count]]})))]
+                                                               {:aggregation [[:count]]
+                                                                :aggregation-idents {0 "9krpAHgqqJ5Me-jLOW7y4"}})))]
                           [(-> count-col
                                (dissoc :effective_type)
                                (assoc :field_ref field-ref
@@ -234,6 +241,7 @@
                (lib.tu.macros/mbql-query venues
                  {:source-query    {:source-query    {:source-query    {:source-table $$venues
                                                                         :aggregation  [[:count]]
+                                                                        :aggregation-idents {0 "9krpAHgqqJ5Me-jLOW7y4"}
                                                                         :breakout     [$price]}
                                                       :source-metadata (metadata-with-count-field-ref [:aggregation 0])}
                                     :source-metadata (metadata-with-count-field-ref *count/Integer)}
@@ -242,6 +250,7 @@
               (lib.tu.macros/mbql-query venues
                 {:source-query {:source-query {:source-query {:source-table $$venues
                                                               :aggregation  [[:count]]
+                                                              :aggregation-idents {0 "9krpAHgqqJ5Me-jLOW7y4"}
                                                               :breakout     [$price]}}}})))))))
 
 (deftest ^:parallel nested-sources-with-source-native-query-test
@@ -276,6 +285,7 @@
       (is (= (lib.tu.macros/mbql-query venues
                {:source-query    {:source-table $$venues
                                   :aggregation  [[:count]]
+                                  :aggregation-idents {0 "XD9yrUZiW0W2rjGTIbTBH"}
                                   :breakout     [[:field %latitude {:binning {:strategy :default}}]]}
                 :source-metadata (concat
                                   (let [[lat-col]   (venues-source-metadata :latitude)
@@ -300,6 +310,7 @@
                 {:source-query
                  {:source-table $$venues
                   :aggregation  [[:count]]
+                  :aggregation-idents {0 "XD9yrUZiW0W2rjGTIbTBH"}
                   :breakout     [[:field %latitude {:binning {:strategy :default}}]]}})))))))
 
 (deftest ^:parallel deduplicate-column-names-test

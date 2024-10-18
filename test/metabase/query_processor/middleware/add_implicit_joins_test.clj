@@ -242,6 +242,7 @@
                                *count/Integer]
                 :source-query {:source-table $$orders
                                :aggregation  [[:count]]
+                               :aggregation-idents {0 "2xBUMPiDLhteMbyT0H1yh"}
                                :breakout     [!month.created-at
                                               [:field %products.created-at {:source-field  %product-id
                                                                             :temporal-unit :month
@@ -259,6 +260,7 @@
                  :fields       [$created-at $product-id->products.created-at *count/Integer]
                  :source-query {:source-table $$orders
                                 :aggregation  [[:count]]
+                                :aggregation-idents {0 "2xBUMPiDLhteMbyT0H1yh"}
                                 :breakout     [!month.created-at !month.product-id->products.created-at]}
                  :limit        5})))))))
 
@@ -379,6 +381,7 @@
                                             $venue-id]
                              :filter       [:> $date "2014-01-01"]}
               :aggregation  [[:count]]
+               :aggregation-idents {0 "aEenppmBa07dVk7GxmaF_"}
               :breakout     [[:field %venues.price {:source-field %venue-id, :join-alias "VENUES__via__VENUE_ID"}]]
               :order-by     [[:asc [:field %venues.price {:source-field %venue-id, :join-alias "VENUES__via__VENUE_ID"}]]]
               :joins        [{:source-table $$venues
@@ -392,6 +395,7 @@
               {:source-query {:source-table $$checkins
                               :filter       [:> $date "2014-01-01"]}
                :aggregation  [[:count]]
+               :aggregation-idents {0 "aEenppmBa07dVk7GxmaF_"}
                :breakout     [$venue-id->venues.price]
                :order-by     [[:asc $venue-id->venues.price]]}))))))
 
@@ -446,8 +450,10 @@
              {:source-table $$checkins
               :aggregation  [[:sum [:field %users.id {:join-alias   "USERS__via__USER_ID"
                                                       :source-field %user-id}]]]
+              :aggregation-idents {0  "BYqWGxu8vuVPNbcyNgkaY"}
               :breakout     [$id]
               :joins        [{:alias        "u"
+                              :ident        "lpYPY_TMzbmwLCCR4bjbo"
                               :source-table $$users
                               :condition    [:= *user-id &u.users.id]}
                              {:source-table $$users
@@ -461,8 +467,10 @@
             (lib.tu.macros/mbql-query checkins
               {:source-table $$checkins
                :aggregation  [[:sum $user-id->users.id]]
+               :aggregation-idents {0  "BYqWGxu8vuVPNbcyNgkaY"}
                :breakout     [$id]
                :joins        [{:alias        "u"
+                               :ident        "lpYPY_TMzbmwLCCR4bjbo"
                                :source-table $$users
                                :condition    [:= *user-id &u.users.id]}]
                :limit        10}))))))
@@ -474,6 +482,7 @@
                {:source-query {:source-table $$checkins
                                :aggregation  [[:sum [:field %users.id {:join-alias   "USERS__via__USER_ID"
                                                                        :source-field %user-id}]]]
+                                :aggregation-idents {0 "iN9VFIxlp-t0QQSf1nMtq"}
                                :breakout     [$id]
                                :joins        [{:source-table $$users
                                                :alias        "USERS__via__USER_ID"
@@ -482,6 +491,7 @@
                                                :fk-field-id  %checkins.user-id
                                                :fields       :none}]}
                 :joins        [{:alias        "u"
+                                :ident        "4g4xKA9VNGEWBgMT1aXn8"
                                 :source-table $$users
                                 :condition    [:= *user-id &u.users.id]}]
                 :limit        10})
@@ -489,8 +499,10 @@
               (lib.tu.macros/mbql-query checkins
                 {:source-query {:source-table $$checkins
                                 :aggregation  [[:sum $user-id->users.id]]
+                                :aggregation-idents {0 "iN9VFIxlp-t0QQSf1nMtq"}
                                 :breakout     [$id]}
                  :joins        [{:alias        "u"
+                                 :ident        "4g4xKA9VNGEWBgMT1aXn8"
                                  :source-table $$users
                                  :condition    [:= *user-id &u.users.id]}]
                  :limit        10})))))))
@@ -601,9 +613,11 @@
                                                     %products.category
                                                     {:join-alias   "PRODUCTS__via__PRODUCT_ID"
                                                      :source-field %product-id}]]
-                                    :aggregation  [[:count]]}
+                                    :aggregation  [[:count]]
+                                    :aggregation-idents {0 "lHXWx5Ha3XAGR2AMTsEUo"}}
                      :joins        [{:source-table $$products
                                      :alias        "Products"
+                                     :ident        "LTHWfGU553_lHhAJACB_N"
                                      :condition    [:=
                                                     [:field
                                                      %products.category
@@ -619,9 +633,11 @@
                    (lib.tu.macros/mbql-query orders
                      {:source-query {:source-table $$orders
                                      :breakout     [$product-id->products.category]
-                                     :aggregation  [[:count]]}
+                                     :aggregation  [[:count]]
+                                     :aggregation-idents {0 "lHXWx5Ha3XAGR2AMTsEUo"}}
                       :joins        [{:source-table $$products
                                       :alias        "Products"
+                                      :ident        "LTHWfGU553_lHhAJACB_N"
                                       :condition    [:=
                                                      $product-id->products.category
                                                      &Products.products.category]
@@ -645,6 +661,7 @@
         (is (= (lib.tu.macros/mbql-query products
                  {:source-query {:source-table $$orders
                                  :aggregation [[:count]]
+                                 :aggregation-idents {0 "qBNysTmAJSLFDCgTFIuY9"}
                                  :breakout [&PRODUCTS__via__PRODUCT_ID.$orders.product-id->category]
                                  :joins [{:alias "PRODUCTS__via__PRODUCT_ID"
                                           :fields :none
@@ -654,12 +671,14 @@
                                           :fk-field-id %orders.product-id}]}
                   :source-metadata [{:field_ref &PRODUCTS__via__PRODUCT_ID.$orders.product-id->category}]
                   :joins [{:alias "Q2"
+                           :ident "lGxgmPDQqlGSwg_1f7rjH"
                            :condition [:=
                                        &PRODUCTS__via__PRODUCT_ID.$orders.product-id->category
                                        &Q2.$reviews.product-id->category]
                            :strategy :left-join
                            :source-query {:source-table $$reviews
                                           :aggregation [[:count]]
+                                          :aggregation-idents {0 "7ElpDWrLtz3N6s1Lfftx4"}
                                           :breakout [&PRODUCTS__via__PRODUCT_ID.$reviews.product-id->category]
                                           :joins [{:alias "PRODUCTS__via__PRODUCT_ID"
                                                    :fields :none
@@ -672,13 +691,16 @@
                 (lib.tu.macros/mbql-query products
                   {:source-query {:source-table $$orders
                                   :aggregation [[:count]]
+                                  :aggregation-idents {0 "qBNysTmAJSLFDCgTFIuY9"}
                                   :breakout [$orders.product-id->category]}
                    :source-metadata [{:field_ref $orders.product-id->category}]
                    :joins [{:alias "Q2"
+                            :ident "lGxgmPDQqlGSwg_1f7rjH"
                             :condition [:= $orders.product-id->category &Q2.$reviews.product-id->category]
                             :strategy :left-join
                             :source-query {:source-table $$reviews
                                            :aggregation [[:count]]
+                                           :aggregation-idents {0 "7ElpDWrLtz3N6s1Lfftx4"}
                                            :breakout [$reviews.product-id->category]}
                             :source-metadata [{:field_ref $reviews.product-id->category}]}]}))))))))
 
@@ -695,6 +717,7 @@
                               :strategy :left-join
                               :source-query {:source-table $$orders
                                              :aggregation [[:count]]
+                                             :aggregation-idents {0 "P8KJFcgU0t1ebn5Hk6Kcp"}
                                              :breakout [&PRODUCTS__via__PRODUCT_ID.$orders.product-id->category]
                                              :joins [{:alias "PRODUCTS__via__PRODUCT_ID"
                                                       :fields :none
@@ -712,5 +735,6 @@
                                :strategy :left-join
                                :source-query {:source-table $$orders
                                               :aggregation [[:count]]
+                                              :aggregation-idents {0 "P8KJFcgU0t1ebn5Hk6Kcp"}
                                               :breakout [$orders.product-id->category]}
                                :source-metadata [{:field_ref $orders.product-id->category}]}]})))))))

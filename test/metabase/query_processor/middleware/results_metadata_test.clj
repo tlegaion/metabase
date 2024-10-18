@@ -201,6 +201,7 @@
          :type     :query
          :query    {:source-table (mt/id :checkins)
                     :aggregation  [[:count]]
+                    :aggregation-idents {0 (u/generate-nano-id)}
                     :breakout     [[:field (mt/id :checkins :date) {:temporal-unit :year}]]}
          :info     {:card-id    (u/the-id card)
                     :query-hash (qp.util/query-hash {})}}))

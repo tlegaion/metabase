@@ -383,6 +383,7 @@
                      :type       :query
                      :query      {:source-table $$orders
                                   :aggregation  [[:sum [:field (mt/id :orders :total)]]]
+                                  :aggregation-idents {0  "NfS-JswMSYJ8TLFR-QfWI"}
                                   :breakout     [[:field
                                                   (mt/id :orders :product_id)
                                                   {:base-type    :type/Integer}]]

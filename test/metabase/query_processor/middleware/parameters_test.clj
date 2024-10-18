@@ -60,10 +60,12 @@
   (testing "can we expand MBQL params if they are specified at the top level?"
     (is (= (mt/mbql-query venues
              {:aggregation [[:count]]
+              :aggregation-idents {0  "Vs9AYsCgewtKvjC8Yvuh3"}
               :filter      [:= $price 1]})
            (substitute-params
             (mt/mbql-query venues
               {:aggregation [[:count]]
+               :aggregation-idents {0  "Vs9AYsCgewtKvjC8Yvuh3"}
                :parameters  [{:name "price", :type :category, :target $price, :value 1}]}))))))
 
 (deftest ^:parallel expand-native-top-level-params-test
@@ -84,12 +86,14 @@
     (is (= (mt/mbql-query venues
              {:source-query {:source-table $$venues
                              :filter       [:= $price 1]}
-              :aggregation  [[:count]]})
+              :aggregation  [[:count]]
+              :aggregation-idents {0 "AhyJe9HFDAIIKAcJjcC_s"}})
            (substitute-params
             (mt/mbql-query venues
               {:source-query {:source-table $$venues
                               :parameters   [{:name "price", :type :category, :target $price, :value 1}]}
-               :aggregation  [[:count]]}))))))
+               :aggregation  [[:count]]
+               :aggregation-idents {0 "AhyJe9HFDAIIKAcJjcC_s"}}))))))
 
 (deftest ^:parallel expand-mbql-source-query-date-expression-param-test
   (testing "can we expand MBQL number and date expression params in a source query?"
@@ -97,6 +101,8 @@
              {:source-query {:source-table (meta/id :users)
                              :expressions {"date-column" [:field (meta/id :users :last-login) nil]
                                            "number-column" [:field (meta/id :users :id) nil]}
+                             :expression-idents {"date-column"   "j83s1B15dlLhu_avuybSP"
+                                                 "number-column" "En7BWfVCHwO1cOO-cl3T8"}
                              :filter [:and
                                       [:between [:expression "date-column"] "2019-09-29" "2023-09-29"]
                                       [:= [:expression "number-column"] 1]]}})
@@ -105,6 +111,8 @@
               {:source-query {:source-table (meta/id :users)
                               :expressions {"date-column" [:field (meta/id :users :last-login) nil]
                                             "number-column" [:field (meta/id :users :id) nil]}
+                              :expression-idents {"date-column"   "j83s1B15dlLhu_avuybSP"
+                                                  "number-column" "En7BWfVCHwO1cOO-cl3T8"}
                               :parameters   [{:type :date/range
                                               :value "2019-09-29~2023-09-29"
                                               :target [:dimension [:expression "date-column"]]}
@@ -127,15 +135,19 @@
   (testing "can we expand MBQL params in a JOIN?"
     (is (= (mt/mbql-query venues
              {:aggregation [[:count]]
+              :aggregation-idents {0 "rIQApLju7NL74HG48L6Ca"}
               :joins       [{:source-query {:source-table $$categories
                                             :filter       [:= $categories.name "BBQ"]}
                              :alias        "c"
+                              :ident        "su4xQItTwESss0qw4hQOC"
                              :condition    [:= $category_id &c.categories.id]}]})
            (substitute-params
             (mt/mbql-query venues
               {:aggregation [[:count]]
+               :aggregation-idents {0 "rIQApLju7NL74HG48L6Ca"}
                :joins       [{:source-table $$categories
                               :alias        "c"
+                              :ident        "su4xQItTwESss0qw4hQOC"
                               :condition    [:= $category_id &c.categories.id]
                               :parameters   [{:type "category", :target $categories.name, :value "BBQ"}]}]}))))))
 
@@ -143,17 +155,21 @@
   (testing "can we expand native params in a JOIN?"
     (is (= (mt/mbql-query venues
              {:aggregation [[:count]]
+              :aggregation-idents {0 "2Q54WkSK1pGDv40SWiD6j"}
               :joins       [{:source-query {:native "SELECT * FROM categories WHERE name = ?;"
                                             :params ["BBQ"]}
                              :alias        "c"
+                             :ident        "bczlsW5Dpsq9BSDluz0Q2"
                              :condition    [:= $category_id &c.*categories.id]}]})
            (substitute-params
             (mt/mbql-query venues
               {:aggregation [[:count]]
+               :aggregation-idents {0 "2Q54WkSK1pGDv40SWiD6j"}
                :joins       [{:source-query {:native        "SELECT * FROM categories WHERE name = {{cat}};"
                                              :template-tags {"cat" {:name "cat", :display-name "Category", :type :text}}
                                              :parameters    [{:type "category", :target [:variable [:template-tag "cat"]], :value "BBQ"}]}
                               :alias        "c"
+                              :ident        "bczlsW5Dpsq9BSDluz0Q2"
                               :condition    [:= $category_id &c.*categories.id]}]}))))))
 
 (deftest ^:parallel expand-multiple-mbql-params-test
@@ -163,17 +179,21 @@
            {:source-query {:source-table $$venues
                            :filter       [:= $price 1]}
             :aggregation  [[:count]]
+             :aggregation-idents {0 "fcHrdmKTHk2_pmRge_aLi"}
             :joins        [{:source-query {:source-table $$categories
                                            :filter       [:= $categories.name "BBQ"]}
                             :alias        "c"
+                            :ident        "CQprRMwYjfH3TyyKZJ74n"
                             :condition    [:= $category_id &c.categories.id]}]})
          (substitute-params
           (mt/mbql-query venues
             {:source-query {:source-table $$venues
                             :parameters   [{:name "price", :type :category, :target $price, :value 1}]}
              :aggregation  [[:count]]
+             :aggregation-idents {0 "fcHrdmKTHk2_pmRge_aLi"}
              :joins        [{:source-table $$categories
                              :alias        "c"
+                             :ident        "CQprRMwYjfH3TyyKZJ74n"
                              :condition    [:= $category_id &c.categories.id]
                              :parameters   [{:type "category", :target $categories.name, :value "BBQ"}]}]}))))))
 
@@ -183,18 +203,22 @@
   (testing "can we expand multiple sets of MBQL params with params in a join and the join's source query?"
     (is (= (mt/mbql-query venues
              {:aggregation [[:count]]
+              :aggregation-idents {0 "hfecn5xfBcIC8D1AvEQOO"}
               :joins       [{:source-query {:source-table $$categories
                                             :filter       [:and
                                                            [:= $categories.name "BBQ"]
                                                            [:= $categories.id 5]]}
                              :alias        "c"
+                             :ident        "f-GHnbgTReCv4pzmPmhqS"
                              :condition    [:= $category_id &c.categories.id]}]})
            (substitute-params
             (mt/mbql-query venues
               {:aggregation [[:count]]
+               :aggregation-idents {0 "hfecn5xfBcIC8D1AvEQOO"}
                :joins       [{:source-query {:source-table $$categories
                                              :parameters   [{:name "id", :type :category, :target $categories.id, :value 5}]}
                               :alias        "c"
+                              :ident        "f-GHnbgTReCv4pzmPmhqS"
                               :condition    [:= $category_id &c.categories.id]
                               :parameters   [{:type "category", :target $categories.name, :value "BBQ"}]}]}))))))
 

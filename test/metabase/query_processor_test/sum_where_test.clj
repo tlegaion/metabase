@@ -107,6 +107,7 @@
                                                 :dataset-query {:database (mt/id)
                                                                 :type :query
                                                                 :query {:source-table (mt/id :venues)
+                                                                        :aggregation-idents {0 "IQfNtnbgVL0UsLD589XON"}
                                                                         :aggregation  [:sum-where
                                                                                        [:field (mt/id :venues :price) nil]
                                                                                        [:< [:field (mt/id :venues :price) nil] 4]]}}

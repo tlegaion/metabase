@@ -236,6 +236,7 @@
                             {:source-table $$orders
                              :filter       [:= $id 1]
                              :aggregation  [[:sum $total]]
+                             :aggregation-idents {0 "VDv6aGk4W8QbFfLlGvFBf"}
                              :breakout     [!day.created-at
                                             $product-id->products.title
                                             $product-id->products.category]})
@@ -243,6 +244,7 @@
                             {:source-query    q1
                              :filter          [:> *sum/Float 100]
                              :aggregation     [[:sum *sum/Float]]
+                             :aggregation-idents {0 "yISxwLbvj85zm7_QCQxiI"}
                              :breakout        [$product-id->products.title]
                              :source-metadata (expected-cols q1)})
             q3            (lib.tu.macros/$ids orders

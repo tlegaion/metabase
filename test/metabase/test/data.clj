@@ -151,6 +151,7 @@
    (as-> inner-query <>
      (mbql-query-impl/parse-tokens table-name <>)
      (mbql-query-impl/maybe-add-source-table <> table-name)
+     (mbql-query-impl/wrap-populate-idents <>)
      (mbql-query-impl/wrap-inner-query <>)
      (vary-meta <> assoc :type :mbql))))
 
@@ -168,7 +169,8 @@
     {:database `(id)
      :type     :query}
     (cond-> (mbql-query-impl/parse-tokens table-name outer-query)
-      (not (:native outer-query)) (update :query mbql-query-impl/maybe-add-source-table table-name)))))
+      (not (:native outer-query)) (-> (update :query mbql-query-impl/maybe-add-source-table table-name)
+                                      (update :query mbql-query-impl/wrap-populate-idents))))))
 
 (defmacro native-query
   "Like `mbql-query`, but for native queries."
