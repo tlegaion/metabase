@@ -40,7 +40,8 @@
    :dataset_query {:database (mt/id)
                    :type     :query
                    :query    (merge {:source-table (mt/id :checkins)
-                                     :aggregation  [["count"]]}
+                                     :aggregation  [["count"]]
+                                     :aggregation-idents {0 (u/generate-nano-id)}}
                                     query-map)}})
 
 (defmacro checkins-query-card [query]
@@ -51,7 +52,8 @@
    :dataset_query {:database (mt/id)
                    :type     :query
                    :query    {:source-table (mt/id :venues)
-                              :aggregation  [[aggregation-op (mt/id :venues :price)]]}}})
+                              :aggregation  [[aggregation-op (mt/id :venues :price)]]
+                              :aggregation-idents {0 (u/generate-nano-id)}}}})
 
 (defn rasta-id []
   (mt/user->id :rasta))

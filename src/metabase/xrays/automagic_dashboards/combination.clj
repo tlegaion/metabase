@@ -43,6 +43,14 @@
     (seq filter-clauses)
     (assoc :filter (into [:and] filter-clauses))))
 
+(defn- add-aggregations
+  "Add aggregations to a query."
+  [query aggregations]
+  (assoc query
+         :aggregation aggregations
+         :aggregation-idents (into {} (for [i (range (count aggregations))]
+                                        [i (u/generate-nano-id)]))))
+
 (defn matching-types?
   "Given two seqs of types, return true of the types of the child
   types are satisfied by some permutation of the parent types."
@@ -241,7 +249,7 @@
               ;; Update dimension-name->field to include named contributions from both metrics and dimensions
             :dimension-name->field all-names->field
             :score-components score-components)
-           (assoc-in [:metric-definition :aggregation] final-aggregate)
+           (update :metric-definition add-aggregations final-aggregate)
            (update :metric-definition add-breakouts-and-filter
                    (vals merged-dims)
                    (mapv (comp :filter simple-grounded-filters) card-filters))

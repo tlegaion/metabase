@@ -95,13 +95,15 @@
   "Return the distinct count of `field`."
   [field & [limit]]
   (-> (table-query (:table_id field) {:aggregation [[:distinct [:field (u/the-id field) nil]]]
+                                      :aggregation-idents {0 (u/generate-nano-id)}
                                       :limit       limit})
       :data :rows first first int))
 
 (defn field-count
   "Return the count of `field`."
   [field]
-  (-> (table-query (:table_id field) {:aggregation [[:count [:field (u/the-id field) nil]]]})
+  (-> (table-query (:table_id field) {:aggregation [[:count [:field (u/the-id field) nil]]]
+                                      :aggregation-idents {0 (u/generate-nano-id)}})
       :data :rows first first int))
 
 (def max-sample-rows
@@ -143,11 +145,13 @@
                              (into {} (for [field text-fields]
                                         [field [(str (gensym "substring"))
                                                 [:substring [:field (u/the-id field) nil]
-                                                 1 truncation-size]]])))]
+                                                 1 truncation-size]]])))
+        expressions        (into {} (vals field->expressions))]
     {:database   (:db_id table)
      :type       :query
      :query      (cond-> {:source-table (u/the-id table)
-                          :expressions  (into {} (vals field->expressions))
+                          :expressions  expressions
+                          :expression-idents (update-vals expressions (fn [_] (u/generate-nano-id)))
                           :fields       (vec (for [field fields]
                                                (if-let [[expression-name _] (get field->expressions field)]
                                                  [:expression expression-name]

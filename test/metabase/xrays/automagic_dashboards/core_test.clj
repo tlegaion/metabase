@@ -699,6 +699,7 @@
                             :query    (mt/$ids
                                         {:source-table $$products
                                          :aggregation [[:count]],
+                                         :aggregation-idents {0 (u/generate-nano-id)}
                                          :breakout [$products.id]
                                          :filter [:time-interval $products.created_at -30 :day]})
                             :type     :query}]
@@ -1556,7 +1557,7 @@
                                                                  (remove (comp (#'magic/singular-cell-dimension-field-ids root) #'magic/id-or-name)))
                                                    :cards dashcards)
                 final-dashboard             (populate/create-dashboard base-dashboard show)
-                strip-ids                   (partial walk/prewalk (fn [v] (cond-> v (map? v) (dissoc :id :card_id))))]
+                strip-ids                   (partial walk/prewalk (fn [v] (cond-> v (map? v) (dissoc :id :card_id :aggregation-idents))))]
             (is (pos? (count (:dashcards final-dashboard))))
             (is (= (strip-ids (:dashcards final-dashboard))
                    (strip-ids (:dashcards (#'magic/generate-dashboard base-context template
@@ -1614,14 +1615,18 @@
                                       :joins
                                       [{:strategy     :left-join
                                         :alias        "Products"
+                                        :ident        (u/generate-nano-id)
                                         :condition
                                         [:=
                                          [:field (mt/id :orders :product_id) {:base-type :type/Integer}]
                                          [:field (mt/id :products :id) {:base-type :type/BigInteger :join-alias "Products"}]]
                                         :source-table (mt/id :products)}]
                                       :aggregation  [[:avg [:field (mt/id :orders :tax) {:base-type :type/Float}]]]
+                                      :aggregation-idents {0 (u/generate-nano-id)}
                                       :breakout     [[:field (mt/id :products :title)
-                                                      {:base-type :type/Text :join-alias "Products"}]]}})
+                                                      {:base-type  :type/Text
+                                                       :join-alias "Products"
+                                                       :ident      (u/generate-nano-id)}]]}})
               right                (t2/select-one :model/Table (mt/id :orders))
               cell-query           [:= [:field (mt/id :products :title)
                                         {:base-type :type/Text :join-alias "Products"}]

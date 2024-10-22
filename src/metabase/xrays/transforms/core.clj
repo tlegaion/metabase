@@ -69,20 +69,25 @@
 (defn- maybe-add-expressions
   [bindings {:keys [expressions name]} query]
   (if expressions
-    (-> query
-        (assoc :expressions (->> expressions
-                                 keys
-                                 (select-keys (get-in bindings [name :dimensions]))))
-        (update :fields concat (for [expression (keys expressions)]
-                                 [:expression expression])))
+    (let [expr-clauses (->> expressions
+                            keys
+                            (select-keys (get-in bindings [name :dimensions])))]
+      (-> query
+          (assoc :expressions       expr-clauses
+                 :expression-idents (update-vals expr-clauses (fn [_] (u/generate-nano-id))))
+          (update :fields concat (for [expression (keys expressions)]
+                                   [:expression expression]))))
     query))
 
 (defn- maybe-add-aggregation
   [bindings {:keys [name aggregation]} query]
-  (->> (for [agg (keys aggregation)]
-         [:aggregation-options (get-in bindings [name :dimensions agg]) {:name agg}])
-       not-empty
-       (m/assoc-some query :aggregation)))
+  (let [aggs   (->> (for [agg (keys aggregation)]
+                      [:aggregation-options (get-in bindings [name :dimensions agg]) {:name agg}])
+                    not-empty)
+        idents (when (seq aggs)
+                 (into {} (map (juxt identity (fn [_] (u/generate-nano-id))))
+                       (range (count aggs))))]
+    (m/assoc-some query :aggregation aggs :aggregation-idents idents)))
 
 (defn- maybe-add-breakout
   [bindings {:keys [name breakout]} query]

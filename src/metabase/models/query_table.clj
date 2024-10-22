@@ -7,6 +7,3 @@
 
 (doto :model/QueryTable
   (derive :metabase/model))
-
-(t2/define-after-select :model/QueryTable [_model]
-  #_(prn (ex-info "QueryTable" {})))

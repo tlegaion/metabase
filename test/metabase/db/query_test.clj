@@ -42,17 +42,21 @@
                                             :condition    [:=
                                                            [:field (mt/id :orders :user_id) nil]
                                                            [:field (mt/id :people :id) {:join-alias "People - User"}]]
-                                            :alias        "People - User"}
+                                            :alias        "People - User"
+                                            :ident        (u/generate-nano-id)}
                                            {:fields       [[:field (mt/id :products :rating) {:join-alias "Products"}]
                                                            [:field (mt/id :products :price) {:join-alias "Products"}]]
                                             :source-table (mt/id :products)
                                             :condition    [:=
                                                            [:field (mt/id :orders :product_id) nil]
                                                            [:field (mt/id :products :id) {:join-alias "Products"}]]
-                                            :alias        "Products"}]
+                                            :alias        "Products"
+                                            :ident        (u/generate-nano-id)}]
                             :filter       [:>= [:field (mt/id :products :rating) {:join-alias "Products"}] 3]
                             :aggregation  [[:count]]
-                            :breakout     [[:field (mt/id :people :source) {:join-alias "People - User"}]]})
+                            :aggregation-idents {0 (u/generate-nano-id)}
+                            :breakout     [[:field (mt/id :people :source) {:join-alias "People - User"
+                                                                            :ident      (u/generate-nano-id)}]]})
                :database (mt/id)}]
         (verify-same-query q))))
   (testing "A test with several joins a custom column, and an aggregate should produce the same result in mbql or the derived native sql"
@@ -67,19 +71,24 @@
                                             :condition    [:=
                                                            [:field (mt/id :orders :user_id) nil]
                                                            [:field (mt/id :people :id) {:join-alias "People - User"}]]
-                                            :alias        "People - User"}
+                                            :alias        "People - User"
+                                            :ident        (u/generate-nano-id)}
                                            {:fields       [[:field (mt/id :products :rating) {:join-alias "Products"}]
                                                            [:field (mt/id :products :price) {:join-alias "Products"}]]
                                             :source-table (mt/id :products)
                                             :condition    [:=
                                                            [:field (mt/id :orders :product_id) nil]
                                                            [:field (mt/id :products :id) {:join-alias "Products"}]]
-                                            :alias        "Products"}]
+                                            :alias        "Products"
+                                            :ident        (u/generate-nano-id)}]
                             :expressions  {"Price per Star" [:/
                                                              [:field (mt/id :products :price) {:join-alias "Products"}]
                                                              [:field (mt/id :products :rating) {:join-alias "Products"}]]}
+                            :expression-idents {"Price per Star" (u/generate-nano-id)}
                             :aggregation  [[:avg [:expression "Price per Star"]]],
-                            :breakout     [[:field (mt/id :products :category) {:join-alias "Products"}]]})
+                            :aggregation-idents {0 (u/generate-nano-id)}
+                            :breakout     [[:field (mt/id :products :category) {:join-alias "Products"
+                                                                                :ident      (u/generate-nano-id)}]]})
                :database (mt/id)}]
         (verify-same-query q)))))
 
