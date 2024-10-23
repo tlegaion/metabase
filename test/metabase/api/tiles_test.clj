@@ -6,7 +6,8 @@
    [clojure.test :refer :all]
    [metabase.api.tiles :as api.tiles]
    [metabase.query-processor.compile :as qp.compile]
-   [metabase.test :as mt]))
+   [metabase.test :as mt]
+   [metabase.util :as u]))
 
 (defn- png? [s]
   (= [\P \N \G]
@@ -96,7 +97,8 @@
                                :query {:source-table (mt/id :people)
                                        :breakout [[:field (mt/id :people :latitude)]
                                                   [:field (mt/id :people :longitude)]]
-                                       :aggregation [[:count]]}}))]
+                                       :aggregation [[:count]]
+                                       :aggregation-idents {0 (u/generate-nano-id)}}}))]
           (is (= [[36.6163612 -94.5197949]
                   [36.8177783 -93.8447328]
                   [36.8311004 -95.0253779]]

@@ -100,7 +100,9 @@
   ([db-or-id table-or-id]
    {:database (u/the-id db-or-id)
     :type     :query
-    :query    {:source-table (u/the-id table-or-id), :aggregation [[:count]]}}))
+    :query    {:source-table (u/the-id table-or-id)
+               :aggregation  [[:count]]
+               :aggregation-idents {0 (u/generate-nano-id)}}}))
 
 (defn pmbql-count-query
   ([]

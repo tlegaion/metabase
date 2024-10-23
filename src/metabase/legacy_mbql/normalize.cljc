@@ -392,7 +392,10 @@
                                                              (string? %) parse-long
                                                              (keyword? %) (-> name parse-long))))
                      :expressions        normalize-expressions-tokens
-                     :expression-idents  identity ;; Keep these as string -> string maps
+                     :expression-idents  (fn [m]
+                                           (update-keys m #(if (keyword? %)
+                                                             (name %)
+                                                             %)))
                      :order-by           normalize-order-by-tokens
                      :source-query       normalize-source-query
                      :source-metadata    {::sequence normalize-source-metadata}

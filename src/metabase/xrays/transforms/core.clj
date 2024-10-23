@@ -121,6 +121,13 @@
   [_bindings {:keys [limit]} query]
   (m/assoc-some query :limit limit))
 
+(defn- add-expression-idents [{:keys [expressions] :as inner-query}]
+  (assoc inner-query :expression-idents (update-vals expressions (fn [_] (u/generate-nano-id)))))
+
+(defn- add-aggregation-idents [{:keys [aggregation] :as inner-query}]
+  (assoc inner-query :aggregation-idents (into {} (for [i (range (count aggregation))]
+                                                    [i (u/generate-nano-id)]))))
+
 (mu/defn- transform-step! :- Bindings
   [bindings :- Bindings
    {:keys [name source aggregation expressions] :as step} :- Step]
@@ -129,15 +136,19 @@
                            (add-bindings name (get-in bindings [source :dimensions]))
                            (add-bindings name expressions)
                            (add-bindings name aggregation))
+        inner-query    (->> {:source-table (->source-table-reference source-entity)}
+                            (maybe-add-fields local-bindings step)
+                            (maybe-add-expressions local-bindings step)
+                            (maybe-add-aggregation local-bindings step)
+                            (maybe-add-breakout local-bindings step)
+                            (maybe-add-joins local-bindings step)
+                            (maybe-add-filter local-bindings step)
+                            (maybe-add-limit local-bindings step))
+        inner-query    (cond-> inner-query
+                         (seq (:expressions inner-query)) add-expression-idents
+                         (seq (:aggregation inner-query)) add-aggregation-idents)
         query          {:type     :query
-                        :query    (->> {:source-table (->source-table-reference source-entity)}
-                                       (maybe-add-fields local-bindings step)
-                                       (maybe-add-expressions local-bindings step)
-                                       (maybe-add-aggregation local-bindings step)
-                                       (maybe-add-breakout local-bindings step)
-                                       (maybe-add-joins local-bindings step)
-                                       (maybe-add-filter local-bindings step)
-                                       (maybe-add-limit local-bindings step))
+                        :query    inner-query
                         :database ((some-fn :db_id :database_id) source-entity)}]
     (assoc bindings name {:entity     (tf.materialize/make-card-for-step! step query)
                           :dimensions (infer-resulting-dimensions local-bindings step query)})))

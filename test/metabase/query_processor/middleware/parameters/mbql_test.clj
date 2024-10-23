@@ -11,7 +11,8 @@
    [metabase.query-processor.middleware.parameters.mbql :as qp.mbql]
    [metabase.query-processor.store :as qp.store]
    [metabase.test :as mt]
-   [metabase.test.data.interface :as tx]))
+   [metabase.test.data.interface :as tx]
+   [metabase.util :as u]))
 
 (defn- expand-parameters [query]
   (let [query (mbql.normalize/normalize query)]
@@ -442,11 +443,14 @@
                       {:base-type :type/DateTimeWithLocalTZ, :temporal-unit unit}])
           query    {:database (mt/id)
                     :type     :query
-                    :query    {:source-table (mt/id :orders)
-                               :aggregation  [[:count]]
-                               :breakout     [(by-unit :day)
-                                              (by-unit :month)]
-                               :order-by     [[:asc (by-unit :month)]]}
+                    :query    {:source-table       (mt/id :orders)
+                               :aggregation        [[:count]]
+                               :aggregation-idents {0 (u/generate-nano-id)}
+                               :breakout           [(by-unit :day)
+                                                    (by-unit :month)]
+                               :breakout-idents    {0 (u/generate-nano-id)
+                                                    1 (u/generate-nano-id)}
+                               :order-by           [[:asc (by-unit :month)]]}
                     :parameters [{:type   :temporal-unit
                                   :target [:dimension (by-unit :month)]
                                   :value  :week}]}]

@@ -1882,7 +1882,8 @@
                                               :type :query
                                               :query {:source-table (str "card__" (:id c1))
                                                       :aggregation
-                                                      [[:distinct [:field "STATE" {:base-type :type/Text}]]]}}]
+                                                      [[:distinct [:field "STATE" {:base-type :type/Text}]]]
+                                                      :aggregation-idents {0 (u/generate-nano-id)}}}]
                                    {:name "C2"
                                     :database_id (mt/id)
                                     :dataset_query query

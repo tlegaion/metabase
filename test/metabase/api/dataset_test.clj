@@ -79,7 +79,8 @@
   (testing "POST /api/dataset"
     (testing "\nJust a basic sanity check to make sure Query Processor endpoint is still working correctly."
       (let [query (mt/mbql-query checkins
-                    {:aggregation [[:count]]})
+                    {:aggregation [[:count]]
+                     :aggregation-idents {0 "8SNZjHtOzD-AAyMP677-1"}})
             result (mt/user-http-request :crowberto :post 202 "dataset" query)]
         (testing "\nAPI Response"
           (is (partial=
@@ -91,7 +92,8 @@
                 :status                 "completed"
                 :context                "ad-hoc"
                 :json_query             (-> (mt/mbql-query checkins
-                                              {:aggregation [[:count]]})
+                                              {:aggregation [[:count]]
+                                               :aggregation-idents {0 "8SNZjHtOzD-AAyMP677-1"}})
                                             (assoc-in [:query :aggregation] [["count"]])
                                             (assoc :type "query")
                                             (merge query-defaults))
