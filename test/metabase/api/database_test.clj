@@ -1729,7 +1729,8 @@
                                         :dataset_query {:type :query
                                                         :database (mt/id)
                                                         :query {:source-table (str "card__" (:id card-1))
-                                                                :aggregation [[:count]]}}}
+                                                                :aggregation [[:count]]
+                                                                :aggregation-idents {0 (u/generate-nano-id)}}}}
                      Card       card-2 (assoc (card-with-native-query "Card 2")
                                               :type :model)
                      Card       _card-3 (assoc (card-with-native-query "error")
