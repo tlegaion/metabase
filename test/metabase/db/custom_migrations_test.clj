@@ -2346,3 +2346,140 @@
                    (no-stage-pattern multi-stage-question-id)
                    (no-stage-pattern multi-stage-model-id)]
                   (query-parameter-mappings))))))))
+
+(deftest set-stage-number-in-parameter-mappings-perf-test
+  (testing "v52.2024-10-26T18:42:42 migration performance"
+    (impl/test-migrations ["v52.2024-10-26T18:42:42"] [migrate!]
+      (let [single-stage-query {:source-table 29, :filter [:> [:field 288 nil] "2015-01-01"]},
+            multi-stage-query {:source-query
+                               {:source-query single-stage-query
+                                :aggregation [:count],
+                                :order-by [[:asc [:field 275 {:source-field 290}]]],
+                                :breakout [[:field 200 nil]
+                                           [:field 275 {:source-field 290}]],
+                                :filter [:starts-with [:field 275 {:source-field 290}] "F"]},
+                               :filter [:> [:field "count" {:base-type :type/Integer}] 5]}
+            native-query {:query "SELECT ID, NAME, CATEGORY_ID FROM VENUES ORDER BY ID DESC LIMIT 2"}
+            user-id (t2/insert-returning-pks! (t2/table-name :model/User)
+                                              {:first_name  "Howard"
+                                               :last_name   "Hughes"
+                                               :email       "howard@aircraft.com"
+                                               :password    "superstrong"
+                                               :date_joined :%now})
+            database-id (t2/insert-returning-pks! (t2/table-name :model/Database)
+                                                  {:name       "DB"
+                                                   :engine     "h2"
+                                                   :created_at :%now
+                                                   :updated_at :%now
+                                                   :details    "{}"})
+            dashboard-id (t2/insert-returning-pks! :model/Dashboard {:name                "My Dashboard"
+                                                                     :creator_id          user-id
+                                                                     :parameters          []})
+            single-stage-dataset-query (json/generate-string {:type "query"
+                                                              :database database-id
+                                                              :query single-stage-query})
+            multi-stage-dataset-query (json/generate-string {:type "query"
+                                                             :database database-id
+                                                             :query multi-stage-query})
+            native-dataset-query (json/generate-string {:type "native"
+                                                        :database database-id
+                                                        :native native-query})
+            parameter-mappings-without-stage-numbers (fn [card-id]
+                                                       [{:card_id card-id
+                                                         :parameter_id (str (random-uuid))
+                                                         :target ["dimension" ["field" 200 {:base-type "type/Integer"}]]}
+                                                        {:card_id card-id
+                                                         :parameter_id (str (random-uuid))
+                                                         :target ["strange-long-forgotten-target" ["field" "count" {:base-type "type/Integer"}]]}
+                                                        {:card_id card-id
+                                                         :parameter_id (str (random-uuid))
+                                                         :target ["dimension" ["field" 275 {:base-type "type/Text"}]]}])
+            create-dashcard (fn create-dashcard
+                              ([card-id] (create-dashcard card-id (parameter-mappings-without-stage-numbers card-id)))
+                              ([card-id pmappings]
+                               (t2/insert-returning-pks! :model/DashboardCard
+                                                         {:dashboard_id dashboard-id
+                                                          :parameter_mappings pmappings
+                                                          :visualization_settings "{}"
+                                                          :card_id      card-id
+                                                          :size_x       4
+                                                          :size_y       4
+                                                          :col          1
+                                                          :row          1})))
+            create-batch (fn create-batch []
+                           (let [single-stage-question-id (t2/insert-returning-pks! (t2/table-name :model/Card)
+                                                                                    {:name                   "Single-stage Question"
+                                                                                     :created_at             :%now
+                                                                                     :updated_at             :%now
+                                                                                     :creator_id             user-id
+                                                                                     :type                   "question"
+                                                                                     :display                "table"
+                                                                                     :dataset_query          single-stage-dataset-query
+                                                                                     :visualization_settings "{}"
+                                                                                     :database_id            database-id
+                                                                                     :collection_id          nil})
+                                 native-question-id (t2/insert-returning-pks! (t2/table-name :model/Card)
+                                                                              {:name                   "Native Question"
+                                                                               :created_at             :%now
+                                                                               :updated_at             :%now
+                                                                               :creator_id             user-id
+                                                                               :type                   "question"
+                                                                               :display                "table"
+                                                                               :dataset_query          native-dataset-query
+                                                                               :visualization_settings "{}"
+                                                                               :database_id            database-id
+                                                                               :collection_id          nil})
+                                 multi-stage-question-id (t2/insert-returning-pks! (t2/table-name :model/Card)
+                                                                                   {:name                    "Multi-stage Question"
+                                                                                    :created_at             :%now
+                                                                                    :updated_at             :%now
+                                                                                    :creator_id             user-id
+                                                                                    :type                   "question"
+                                                                                    :display                "table"
+                                                                                    :dataset_query          multi-stage-dataset-query
+                                                                                    :visualization_settings "{}"
+                                                                                    :database_id            database-id
+                                                                                    :collection_id          nil})
+                                 multi-stage-model-id (t2/insert-returning-pks! (t2/table-name :model/Card)
+                                                                                {:name                   "Single Stage Question"
+                                                                                 :created_at             :%now
+                                                                                 :updated_at             :%now
+                                                                                 :creator_id             user-id
+                                                                                 :type                   "model"
+                                                                                 :display                "table"
+                                                                                 :dataset_query          multi-stage-dataset-query
+                                                                                 :visualization_settings "{}"
+                                                                                 :database_id            database-id
+                                                                                 :collection_id          nil})]
+                             [(create-dashcard single-stage-question-id)
+                              (create-dashcard native-question-id)
+                              (create-dashcard multi-stage-question-id)
+                              (create-dashcard multi-stage-question-id [])
+                              (create-dashcard multi-stage-question-id)
+                              (create-dashcard multi-stage-model-id)]))
+            log (fn [& args]
+                  (apply println "************" args))
+            setup-start (System/currentTimeMillis)
+            _ (log "Population start at" (java.time.Instant/ofEpochMilli setup-start))
+            _ (dotimes [_ (-> (/ 100000 6) Math/ceil int)]
+                (create-batch))
+            migrate-up-start (System/currentTimeMillis)
+            _ (log "Migration start at" (java.time.Instant/ofEpochMilli migrate-up-start)
+                   ;; H2    setup took   18770 ms
+                   ;; PG    setup took 1515893 ms
+                   ;; MYSQL setup took  614173  ms
+                   "setup took" (- migrate-up-start setup-start) "ms")
+            _ (migrate!)
+            migrate-down-start (System/currentTimeMillis)
+            _ (log "Rollback start at" (java.time.Instant/ofEpochMilli migrate-down-start)
+                   ;; H2    migration took  4226 ms
+                   ;; PG    migration took 13727 ms
+                   ;; MYSQL migration took 14116 ms
+                   "migration took" (- migrate-down-start migrate-up-start) "ms")
+            _ (migrate! :down 49)
+            migrate-down-end (System/currentTimeMillis)]
+        (log "Rollback end at" (java.time.Instant/ofEpochMilli migrate-down-end)
+             ;; H2    rollback took  8357 ms
+             ;; PG    rollback took 13440 ms
+             ;; MYSQL rollback took 16703 ms
+             "rollback took" (- migrate-down-end migrate-down-start) "ms")))))
