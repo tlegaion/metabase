@@ -3,7 +3,7 @@
   (:require
    [metabase-enterprise.metabot-v3.client :as metabot-v3.client]
    [metabase-enterprise.metabot-v3.envelope :as envelope]
-   [metabase-enterprise.metabot-v3.tools.interface :as metabot-v3.tools.interface]
+   [metabase-enterprise.metabot-v3.tools :as metabot-v3.tools]
    [metabase.util :as u]
    [metabase.util.o11y :as o11y]))
 
@@ -12,7 +12,7 @@
             (let [result (promise)
                   {:keys [reactions output]}
                   (o11y/with-span :info {:name tool-name}
-                    (u/prog1 (metabot-v3.tools.interface/*invoke-tool* tool-name arguments context)
+                    (u/prog1 (metabot-v3.tools/invoke-tool tool-name arguments context)
                       (deliver result <>)))]
               (envelope/add-tool-response e tool-call-id output reactions)))
           e

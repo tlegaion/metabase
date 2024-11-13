@@ -2,17 +2,13 @@
   (:require
    [clojure.string :as str]
    [medley.core :as m]
-   [metabase-enterprise.metabot-v3.tools.interface :as metabot-v3.tools.interface]
+   [metabase-enterprise.metabot-v3.tools.registry :refer [deftool]]
    [metabase.lib.core :as lib]
    [metabase.lib.metadata :as lib.metadata]
    [metabase.lib.metadata.jvm :as lib.metadata.jvm]
    [metabase.lib.query :as lib.query]
    [metabase.lib.types.isa :as lib.types.isa]
-   [metabase.lib.util :as lib.util]
-   [metabase.util.log :as log]
-   [metabase.util.malli :as mu])
-  (:import
-   (clojure.lang ExceptionInfo)))
+   [metabase.lib.util :as lib.util]))
 
 (defn- column-display-name
   [query column]
@@ -175,20 +171,17 @@
   [query steps]
   (reduce apply-step query steps))
 
-(mu/defmethod metabot-v3.tools.interface/*invoke-tool* :metabot.tool/run-query
-  [_tool-name {:keys [steps]} {:keys [dataset_query]}]
-  (let [metadata-provider (lib.metadata.jvm/application-database-metadata-provider (:database dataset_query))
-        query             (lib/query metadata-provider dataset_query)]
-    (try
-      {:reactions [{:type  :metabot.reaction/run-query
-                    :dataset_query (-> (raw-query query)
-                                       (apply-steps steps)
-                                       lib.query/->legacy-MBQL)}]
-       :output "success"}
-      (catch ExceptionInfo e
-        (log/debug e "Error creating a query in run-query tool")
-        {:output (ex-message e)}))))
-
-(mu/defmethod metabot-v3.tools.interface/*tool-applicable?* :metabot.tool/run-query
-  [_tool-name {:keys [dataset_query]}]
-  (some? dataset_query))
+(deftool run-query
+  :invoke (fn [{:keys [steps]} {:keys [dataset_query]}]
+            (let [metadata-provider (lib.metadata.jvm/application-database-metadata-provider (:database dataset_query))
+                  query             (lib/query metadata-provider dataset_query)
+                  dataset-query     (-> (raw-query query)
+                                        (apply-steps steps)
+                                        lib.query/->legacy-MBQL)]
+              dataset-query))
+  :reactions (fn [dataset-query]
+               [{:type  :metabot.reaction/run-query
+                 :dataset_query dataset-query}])
+  :output "success"
+  :applicable? (fn [{:keys [dataset_query]}]
+                 (some? dataset_query)))

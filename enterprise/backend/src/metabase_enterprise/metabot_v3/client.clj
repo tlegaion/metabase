@@ -56,7 +56,7 @@
    {:messages      messages
     :context       {}
     :tools         (metabot-v3.tools/applicable-tools (metabot-v3.tools/*tools-metadata*) context)
-    :session-id    session-id
+    #_#_:session-id    session-id
     :user-id       api/*current-user-id*
     :instance-info (*instance-info*)}))
 
