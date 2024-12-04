@@ -1,6 +1,9 @@
-import { PLUGIN_EMBEDDING_SDK } from "metabase/plugins";
 import { hasPremiumFeature } from "metabase-enterprise/settings";
 
-if (hasPremiumFeature("embedding_sdk")) {
-  PLUGIN_EMBEDDING_SDK.isEnabled = () => true;
-}
+export const activateEmbeddingSdkPlugins = plugins => {
+  if (hasPremiumFeature("embedding_sdk")) {
+    plugins.PLUGIN_EMBEDDING_SDK.isEnabled = () => true;
+  }
+
+  return plugins;
+};

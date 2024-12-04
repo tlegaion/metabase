@@ -10,7 +10,7 @@ import {
 import Breadcrumbs from "metabase/components/Breadcrumbs";
 import ExternalLink from "metabase/core/components/ExternalLink";
 import { useSelector } from "metabase/lib/redux";
-import { PLUGIN_EMBEDDING_SDK } from "metabase/plugins";
+import { getMetabaseEEPlugins } from "metabase/plugins/getPlugins";
 import { getLearnUrl, getUpgradeUrl } from "metabase/selectors/settings";
 import { Alert, Box, Button, Icon, Stack, Text } from "metabase/ui";
 
@@ -31,7 +31,7 @@ const utmTags = {
 export function EmbeddingSdkSettings({
   updateSetting,
 }: AdminSettingComponentProps) {
-  const isEE = PLUGIN_EMBEDDING_SDK.isEnabled();
+  const isEE = getMetabaseEEPlugins().PLUGIN_EMBEDDING_SDK.isEnabled();
   const isEmbeddingSdkEnabled = useSetting("enable-embedding-sdk");
   const canEditSdkOrigins = isEE && isEmbeddingSdkEnabled;
 
