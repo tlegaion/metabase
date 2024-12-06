@@ -272,7 +272,6 @@ export const OverlaysDemo = ({ enableNesting }: OverlaysDemoProps) => {
             closeOnClickOutside
             onClose={() => setLegacyModalCount(c => c - 1)}
             aria-labelledby={modalTitleId}
-            enableTransition={false}
           >
             <ModalContent>
               <Group style={{ position: "relative" }}>
