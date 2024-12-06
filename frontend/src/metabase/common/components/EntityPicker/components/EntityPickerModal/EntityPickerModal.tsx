@@ -98,6 +98,7 @@ export interface EntityPickerModalProps<
   onConfirm?: () => void;
   onItemSelect: (item: Item) => void;
   isLoadingTabs?: boolean;
+  children?: React.ReactNode;
 }
 
 export function EntityPickerModal<
@@ -122,6 +123,7 @@ export function EntityPickerModal<
   onConfirm,
   onItemSelect,
   isLoadingTabs = false,
+  children,
 }: EntityPickerModalProps<Id, Model, Item>) {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [searchScope, setSearchScope] =
@@ -381,6 +383,7 @@ export function EntityPickerModal<
           </GrowFlex>
           <Modal.CloseButton size={21} pos="relative" top="1px" />
         </Modal.Header>
+        {children}
         <ModalBody p="0">
           {!isLoadingTabs && !isLoadingRecentItems ? (
             <ErrorBoundary>
