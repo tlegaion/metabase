@@ -7,6 +7,7 @@ import _ from "underscore";
 import ErrorBoundary from "metabase/ErrorBoundary";
 import { useListRecentsQuery, useSearchQuery } from "metabase/api";
 import { useModalOpen } from "metabase/hooks/use-modal-open";
+import { useUniqueId } from "metabase/hooks/use-unique-id";
 import { Box, Flex, Icon, Modal, Skeleton, TextInput } from "metabase/ui";
 import { Repeat } from "metabase/ui/components/feedback/Skeleton/Repeat";
 import type {
@@ -338,7 +339,7 @@ export function EntityPickerModal<
     { capture: true, once: true },
   );
 
-  const titleId = useMemo(() => _.uniqueId("entity-picker-modal-title-"), []);
+  const titleId = useUniqueId("entity-picker-modal-title-");
 
   return (
     <Modal.Root
