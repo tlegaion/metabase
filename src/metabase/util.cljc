@@ -1145,3 +1145,8 @@
          (let [acc1 (reduce f init r1)
                acc2 (reduce f acc1 r2)]
            acc2)))))
+
+(defn intov
+  "WIP"
+  [to & args]
+  (apply into (vec to) args))
