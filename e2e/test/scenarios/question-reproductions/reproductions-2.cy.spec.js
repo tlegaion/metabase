@@ -736,10 +736,10 @@ describe("Custom columns visualization settings", () => {
       viewAsDropdown.click();
     });
 
-    cy.findByLabelText("Email link").click();
+    H.leftSidebar().findByText("Email link").click();
 
     H.popover().within(() => {
-      cy.findByText("Email link").should("exist");
+      cy.findByDisplayValue("Email link").should("exist");
     });
 
     saveModifiedQuestion();
