@@ -178,7 +178,7 @@ describe("scenarios > question > native subquery", () => {
         cy.visit(`/question/${questionId2}`);
         cy.findByText("Open Editor").click();
         cy.get("@questionId").then(questionId => {
-          H.nativeEditor()
+          H.NativeEditor.get()
             .should("be.visible")
             .and("contain", `{{#${questionId}-a-people-question-1}}`);
         });
@@ -193,7 +193,7 @@ describe("scenarios > question > native subquery", () => {
         cy.visit(`/question/${questionId2}`);
         cy.findByText("Open Editor").click();
         cy.get("@questionId").then(questionId => {
-          H.nativeEditor()
+          H.NativeEditor.get()
             .should("be.visible")
             .and("contain", `{{#${questionId}-a-people-question-1-changed}}`);
         });
