@@ -14,6 +14,7 @@ export function visitAlias(alias) {
 
 /**
  * Open native (SQL) editor and alias it.
+ * @deprecated To avoid typing SQL, which is unreliable, use the helper startNewNativeQuestion
  *
  * @param {object} options
  * @param {string} [options.databaseName] - If there is more than one database, select the desired one by its name.
