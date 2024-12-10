@@ -1,44 +1,35 @@
-import type { Location } from "history";
-import type { MouseEvent } from "react";
+import { type JSX, type MouseEvent, useState } from "react";
+import { withRouter } from "react-router";
+import type { WithRouterProps } from "react-router/lib/withRouter";
 import { t } from "ttag";
 
-import EntityMenu from "metabase/components/EntityMenu";
+import { isInstanceAnalyticsCollection } from "metabase/collections/utils";
+import Button from "metabase/core/components/Button";
+import Tooltip from "metabase/core/components/Tooltip";
+import type { HeaderButtonProps } from "metabase/dashboard/components/DashboardHeader/DashboardHeaderButtonRow/types";
+import { EmbeddingModals } from "metabase/dashboard/components/DashboardHeader/EmbeddingModals";
 import { useRefreshDashboard } from "metabase/dashboard/hooks";
-import type { DashboardFullscreenControls } from "metabase/dashboard/types";
+import type { SharingModalType } from "metabase/notifications/NotificationsActionsMenu/types";
 import { PLUGIN_MODERATION } from "metabase/plugins";
-import type { Dashboard } from "metabase-types/api";
+import { EmbedMenuItem } from "metabase/sharing/components/SharingMenu/MenuItems/EmbedMenuItem";
+import { ExportPdfMenuItem } from "metabase/sharing/components/SharingMenu/MenuItems/ExportPdfMenuItem";
+import { PublicLinkMenuItem } from "metabase/sharing/components/SharingMenu/MenuItems/PublicLinkMenuItem";
+import { Icon, Menu } from "metabase/ui";
 
-export const DashboardActionMenu = (props: { items: any[] }) => (
-  <EntityMenu
-    key="dashboard-action-menu-button"
-    triggerAriaLabel={t`Move, trash, and more…`}
-    items={props.items}
-    triggerIcon="ellipsis"
-    tooltip={t`Move, trash, and more…`}
-    // TODO: Try to restore this transition once we upgrade to React 18 and can prioritize this update
-    transitionDuration={0}
-  />
-);
-
-export const useGetExtraButtons = ({
+const DashboardActionMenuInner = ({
   canResetFilters,
   onResetFilters,
   onFullscreenChange,
   isFullscreen,
   dashboard,
   canEdit,
-  pathname,
-  openSettingsSidebar,
   location,
-}: DashboardFullscreenControls & {
-  canResetFilters: boolean;
-  onResetFilters: () => void;
-  dashboard: Dashboard;
-  canEdit: boolean;
-  pathname: string;
-  openSettingsSidebar: () => void;
-  location: Location;
-}) => {
+  openSettingsSidebar,
+}: HeaderButtonProps & WithRouterProps): JSX.Element => {
+  const [opened, setOpened] = useState(false);
+
+  const [modalType, setModalType] = useState<SharingModalType | null>(null);
+
   const { refreshDashboard } = useRefreshDashboard({
     dashboardId: dashboard.id,
     parameterQueryParams: location.query,
@@ -50,61 +41,102 @@ export const useGetExtraButtons = ({
     refreshDashboard,
   );
 
-  const extraButtons = [];
+  const hasPublicLink = !!dashboard?.public_uuid;
+  const isArchived = dashboard.archived;
+  const isAnalytics =
+    dashboard.collection && isInstanceAnalyticsCollection(dashboard.collection);
 
-  if (canResetFilters) {
-    extraButtons.push({
-      title: t`Reset all filters`,
-      icon: "revert",
-      action: () => onResetFilters(),
-    });
-  }
+  const canShare = !isArchived && !isAnalytics;
 
-  extraButtons.push({
-    title: t`Enter fullscreen`,
-    icon: "expand",
-    action: (e: MouseEvent) => onFullscreenChange(!isFullscreen, !e.altKey),
-  });
+  return (
+    <>
+      <Menu position="bottom-end" opened={opened} onChange={setOpened}>
+        <Menu.Target>
+          <div>
+            <Tooltip tooltip={t`Move, trash, and more...`} isEnabled={!opened}>
+              <Button onlyIcon icon="ellipsis" />
+            </Tooltip>
+          </div>
+        </Menu.Target>
+        <Menu.Dropdown>
+          {canResetFilters && (
+            <Menu.Item icon={<Icon name="revert" />} onClick={onResetFilters}>
+              {t`Reset all filters`}
+            </Menu.Item>
+          )}
 
-  if (canEdit) {
-    extraButtons.push({
-      title: t`Edit settings`,
-      icon: "gear",
-      action: openSettingsSidebar,
-    });
+          <Menu.Item
+            icon={<Icon name="expand" />}
+            onClick={(e: MouseEvent) =>
+              onFullscreenChange(!isFullscreen, !e.altKey)
+            }
+          >
+            {t`Enter fullscreen`}
+          </Menu.Item>
 
-    extraButtons.push(...moderationItems);
+          {canEdit && (
+            <>
+              <Menu.Item
+                icon={<Icon name="gear" />}
+                onClick={openSettingsSidebar}
+              >
+                {t`Edit settings`}
+              </Menu.Item>
 
-    extraButtons.push({
-      separator: true,
-      key: "separator-after-edit-settings",
-    });
+              {moderationItems}
+            </>
+          )}
 
-    extraButtons.push({
-      title: t`Move`,
-      icon: "move",
-      link: `${pathname}/move`,
-    });
-  }
+          <ExportPdfMenuItem dashboard={dashboard} />
 
-  extraButtons.push({
-    title: t`Duplicate`,
-    icon: "clone",
-    link: `${pathname}/copy`,
-  });
+          {canShare && (
+            <>
+              <Menu.Divider />
+              <PublicLinkMenuItem
+                hasPublicLink={hasPublicLink}
+                onClick={() => setModalType("dashboard-public-link")}
+              />
+              <EmbedMenuItem onClick={() => setModalType("dashboard-embed")} />
+            </>
+          )}
 
-  if (canEdit) {
-    extraButtons.push({
-      separator: true,
-      key: "separator-before-ee-buttons-and-trash",
-    });
+          {canEdit && (
+            <>
+              <Menu.Divider />
 
-    extraButtons.push({
-      title: t`Move to trash`,
-      icon: "trash",
-      link: `${pathname}/archive`,
-    });
-  }
+              <Menu.Item
+                icon={<Icon name="move" />}
+                component="a"
+                href={`${location?.pathname}/move`}
+              >{t`Move`}</Menu.Item>
+            </>
+          )}
 
-  return { extraButtons };
+          <Menu.Item
+            icon={<Icon name="clone" />}
+            component="a"
+            href={`${location?.pathname}/copy`}
+          >{t`Duplicate`}</Menu.Item>
+
+          {canEdit && (
+            <>
+              <Menu.Divider />
+              <Menu.Item
+                icon={<Icon name="trash" />}
+                component="a"
+                href={`${location?.pathname}/archive`}
+              >{t`Move to trash`}</Menu.Item>
+            </>
+          )}
+        </Menu.Dropdown>
+      </Menu>
+      <EmbeddingModals
+        modalType={modalType}
+        dashboard={dashboard}
+        onClose={() => setModalType(null)}
+      />
+    </>
+  );
 };
+
+export const DashboardActionMenu = withRouter(DashboardActionMenuInner);
