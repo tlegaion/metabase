@@ -1,5 +1,6 @@
 import cx from "classnames";
 import type { ReactNode } from "react";
+import type React from "react";
 import { t } from "ttag";
 
 import {
@@ -91,7 +92,7 @@ function SidebarContent({
   );
 }
 
-export const PaneContent = (props: BoxProps) => {
+const PaneContent = (props: BoxProps & { children: React.ReactNode }) => {
   return <Box px="lg" {...props} />;
 };
 
