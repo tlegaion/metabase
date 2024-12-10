@@ -77,13 +77,13 @@ describe("scenarios > question > native subquery", () => {
         // See https://github.com/metabase/metabase/pull/20970
         cy.wait(1000);
 
-        H.nativeEditorCompletions().within(() => {
-          H.nativeEditorCompletion(`${questionId2}-a-`)
+        H.NativeEditor.completions().within(() => {
+          H.NativeEditor.completion(`${questionId2}-a-`)
             .should("be.visible")
             .findByText("Model in Bobby Tables's Personal Collection")
             .should("be.visible");
 
-          H.nativeEditorCompletion(`${questionId1}-a-`)
+          H.NativeEditor.completion(`${questionId1}-a-`)
             .should("be.visible")
             .findByText("Question in Our analytics")
             .should("be.visible");
@@ -132,7 +132,9 @@ describe("scenarios > question > native subquery", () => {
           cy.findByText("Open Editor").click();
           H.nativeEditorType(" a_");
 
-          H.nativeEditorCompletion("A_UNIQUE_COLUMN_NAME").should("be.visible");
+          H.NativeEditor.completion("A_UNIQUE_COLUMN_NAME").should(
+            "be.visible",
+          );
 
           // For some reason, typing `{{#${questionId2}}}` in one go isn't deterministic,
           // so type it in two parts
@@ -142,7 +144,7 @@ describe("scenarios > question > native subquery", () => {
           // so type it in two parts
           H.nativeEditorType(" another");
 
-          H.nativeEditorCompletion("ANOTHER_UNIQUE_COLUMN_NAME").should(
+          H.NativeEditor.completion("ANOTHER_UNIQUE_COLUMN_NAME").should(
             "be.visible",
           );
         });
