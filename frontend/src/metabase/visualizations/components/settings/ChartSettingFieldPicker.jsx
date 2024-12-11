@@ -124,7 +124,7 @@ const ChartSettingFieldPicker = ({
         iconWidth="auto"
         rightSectionWidth="auto"
         rightSection={
-          <Group noWrap spacing="xs" pl="xs" pr="xs">
+          <Group noWrap spacing="xs" pl="xs" pr="sm">
             {!disabled && (
               <ActionIcon c="text-medium" size="sm" radius="xl">
                 <Icon name="chevrondown" />
