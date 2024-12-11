@@ -72,13 +72,10 @@ const ChartSettingFieldPicker = ({
       seriesKey = keyForSingleSeries(seriesForColumn);
     }
   }
-  const data = options.map(({ name, value }) => ({
-    label: name,
-    value,
-  }));
 
   const disabled =
-    data.length === 0 || (data.length === 1 && data[0].value === value);
+    options.length === 0 ||
+    (options.length === 1 && options[0].value === value);
 
   return (
     <ChartSettingFieldPickerRoot
@@ -99,7 +96,7 @@ const ChartSettingFieldPicker = ({
         onChange={onChange}
         icon={
           showDragHandle || (showColorPicker && seriesKey) ? (
-            <>
+            <Group noWrap spacing="xs" pl="sm" pr="xs">
               {showDragHandle && (
                 <GrabberHandle
                   name="grabber"
@@ -119,7 +116,7 @@ const ChartSettingFieldPicker = ({
                   className={CS.pointerEventsAll}
                 />
               )}
-            </>
+            </Group>
           ) : null
         }
         placeholderNoOptions={t`No valid fields`}
@@ -162,7 +159,17 @@ const ChartSettingFieldPicker = ({
           </Group>
         }
         styles={{
+          wrapper: {
+            display: "flex",
+          },
+          icon: {
+            position: "static",
+            width: "auto",
+          },
           input: {
+            "&[data-with-icon]": {
+              paddingLeft: 0,
+            },
             marginLeft: theme.spacing.xs,
             textOverflow: "ellipsis",
             fontWeight: "bold",
@@ -170,6 +177,7 @@ const ChartSettingFieldPicker = ({
               backgroundColor: "var(--mb-color-bg-white) !important",
             },
             border: "none",
+            width: "auto",
             lineHeight: theme.lineHeight,
           },
           rightSection: {
