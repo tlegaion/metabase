@@ -39,6 +39,7 @@ export const ChartSettingSelect = ({
 
   return (
     <Select
+      px={0}
       id={id}
       data-testid="chart-setting-select"
       className={cx(className, CS.block)}
@@ -50,6 +51,7 @@ export const ChartSettingSelect = ({
       placeholder={options.length === 0 ? placeholderNoOptions : placeholder}
       initiallyOpened={isInitiallyOpen}
       searchable={!!searchProp}
+      rightSectionWidth="10px"
       styles={{
         input: {
           fontWeight: "bold",
