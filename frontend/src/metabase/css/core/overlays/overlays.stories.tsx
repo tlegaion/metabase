@@ -212,9 +212,7 @@ const isEarlierInDOM = (elementA: HTMLElement, elementB: HTMLElement) => {
   // If the elements are disconnected, they are not in the same DOM tree
   if (position & Node.DOCUMENT_POSITION_DISCONNECTED) {
     return false;
-  }
-
-  if (position & Node.DOCUMENT_POSITION_FOLLOWING) {
+  } else if (position & Node.DOCUMENT_POSITION_FOLLOWING) {
     return true;
   } else if (position & Node.DOCUMENT_POSITION_PRECEDING) {
     return false;
