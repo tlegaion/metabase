@@ -1,5 +1,6 @@
 import { type JSX, useState } from "react";
 import { t } from "ttag";
+import _ from "underscore";
 
 import { useSetting } from "metabase/common/hooks";
 import Button from "metabase/core/components/Button";
@@ -13,7 +14,7 @@ import {
 } from "metabase/query_builder/actions";
 import { trackTurnIntoModelClicked } from "metabase/query_builder/analytics";
 import { EmbeddingQuestionActions } from "metabase/query_builder/components/view/ViewHeader/components/QuestionActions/EmbeddingQuestionActions";
-import { StrengthIndicator } from "metabase/query_builder/components/view/ViewHeader/components/QuestionActions/QuestionActions.styled";
+import DatasetMetadataStrengthIndicator from "metabase/query_builder/components/view/sidebars/DatasetManagementSection/DatasetMetadataStrengthIndicator";
 import { shouldShowQuestionSettingsSidebar } from "metabase/query_builder/components/view/sidebars/QuestionSettingsSidebar";
 import {
   MODAL_TYPES,
@@ -25,6 +26,8 @@ import * as Lib from "metabase-lib";
 import type Question from "metabase-lib/v1/Question";
 import { checkCanBeModel } from "metabase-lib/v1/metadata/utils/models";
 import type { DatasetEditorTab, QueryBuilderMode } from "metabase-types/store";
+
+import QuestionActionsS from "./QuestionActions.module.css";
 
 const ADD_TO_DASH_TESTID = "add-to-dashboard-button";
 const MOVE_TESTID = "move-button";
@@ -61,6 +64,10 @@ export const QuestionMoreActionsMenu = ({
   const isMetric = question.type() === "metric";
   const isModelOrMetric = isModel || isMetric;
 
+  const isDashboardQuestion = isQuestion && _.isNumber(question.dashboardId());
+  const isStandaloneQuestion =
+    isQuestion && !_.isNumber(question.dashboardId());
+
   const hasCollectionPermissions = question.canWrite();
   const enableSettingsSidebar = shouldShowQuestionSettingsSidebar(question);
 
@@ -95,14 +102,21 @@ export const QuestionMoreActionsMenu = ({
     <Menu position="bottom-end" opened={opened} onChange={setOpened}>
       <Menu.Target>
         <div>
-          <Tooltip tooltip={t`Move, trash, and more...`} isEnabled={!opened}>
+          <Tooltip
+            tooltip={
+              isDashboardQuestion
+                ? t`Move, duplicate, and more...`
+                : t`Move, trash, and more...`
+            }
+            isEnabled={!opened}
+          >
             <Button onlyIcon icon="ellipsis" />
           </Tooltip>
         </div>
       </Menu.Target>
 
       <Menu.Dropdown>
-        {(isQuestion || isMetric) && (
+        {(isStandaloneQuestion || isMetric) && (
           <Menu.Item
             icon={<Icon name="add_to_dash" />}
             onClick={() => onOpenModal(MODAL_TYPES.ADD_TO_DASHBOARD)}
@@ -127,7 +141,11 @@ export const QuestionMoreActionsMenu = ({
             onClick={handleEditMetadata}
           >
             <div>
-              {t`Edit metadata`} <StrengthIndicator dataset={question} />
+              {t`Edit metadata`}{" "}
+              <DatasetMetadataStrengthIndicator
+                className={QuestionActionsS.StrengthIndicator}
+                dataset={question}
+              />
             </div>
           </Menu.Item>
         )}
