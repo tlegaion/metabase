@@ -34,7 +34,7 @@ export function useLoadStaticQuestion({
     },
     // sqlParameterKeys prevents "parameters" from changing every render
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [card, sqlParameterKey],
+    [card?.parameters, sqlParameterKey],
   );
 
   const {
