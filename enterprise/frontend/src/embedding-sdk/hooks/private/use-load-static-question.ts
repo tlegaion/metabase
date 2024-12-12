@@ -2,6 +2,7 @@ import { useMemo } from "react";
 
 import { getParameterDependencyKey } from "embedding-sdk/lib/load-question-utils";
 import { skipToken, useGetCardQuery, useGetCardQueryQuery } from "metabase/api";
+import { getTemplateTagParametersFromCard } from "metabase-lib/v1/parameters/utils/template-tags";
 
 interface LoadStaticQuestionParams {
   questionId: number | null;
@@ -18,29 +19,32 @@ export function useLoadStaticQuestion({
     error: cardError,
   } = useGetCardQuery(questionId !== null ? { id: questionId } : skipToken);
 
+  const hasSqlParameterValues =
+    Object.keys(initialSqlParameters ?? {}).length > 0;
+
+  const cardParameters = useMemo(() => {
+    return card ? getTemplateTagParametersFromCard(card) : [];
+  }, [card]);
+
   // Avoid re-running the query if the parameters haven't changed.
-  const sqlParameterKey = getParameterDependencyKey(initialSqlParameters);
+  const sqlParametersKey = getParameterDependencyKey(initialSqlParameters);
 
   const parameters = useMemo(
-    () => {
-      return (card?.parameters ?? [])
+    () =>
+      cardParameters
         .filter(parameter => parameter.target)
         .map(parameter => ({
           id: parameter.id,
           type: parameter.type,
-          target: parameter.target!,
+          target: parameter.target,
           value: initialSqlParameters?.[parameter.slug],
-        }));
-    },
-    // sqlParameterKeys prevents "parameters" from changing every render
+        })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [card?.parameters, sqlParameterKey],
+    [cardParameters, sqlParametersKey],
   );
 
-  const hasSqlParameters = Object.keys(initialSqlParameters ?? {}).length > 0;
-
-  const isSqlParametersLoaded = hasSqlParameters
-    ? (card?.parameters ?? [])?.length > 0
+  const isParametersLoaded = hasSqlParameterValues
+    ? card && cardParameters.length > 0
     : true;
 
   const {
@@ -48,7 +52,7 @@ export function useLoadStaticQuestion({
     isLoading: isQueryResultLoading,
     error: queryResultError,
   } = useGetCardQueryQuery(
-    questionId !== null && isSqlParametersLoaded
+    questionId !== null && isParametersLoaded
       ? { cardId: questionId, ...(parameters ? { parameters } : {}) }
       : skipToken,
   );
