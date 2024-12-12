@@ -81,7 +81,7 @@ const StaticQuestionInner = ({
   const metadata = useSelector(getMetadata);
 
   const { card, loading, queryResult, error, updateQuestion } =
-    useLoadStaticQuestion(questionId, initialSqlParameters);
+    useLoadStaticQuestion({ questionId, initialSqlParameters });
 
   const isLoading = loading || (!queryResult && !error) || isValidatingEntityId;
 
