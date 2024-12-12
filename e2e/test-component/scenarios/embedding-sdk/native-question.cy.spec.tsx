@@ -7,13 +7,18 @@ import {
 import {
   mockAuthProviderAndJwtSignIn,
   mountInteractiveQuestion,
+  mountSdkContent,
   signInAsAdminAndEnableEmbeddingSdk,
 } from "e2e/support/helpers/component-testing-sdk";
 import type { DatasetColumn } from "metabase-types/api";
+import {
+  InteractiveQuestion,
+  StaticQuestion,
+} from "@metabase/embedding-sdk-react";
 
 const { ORDERS, ORDERS_ID } = SAMPLE_DATABASE;
 
-describeEE("scenarios > embedding-sdk > interactive-question > native", () => {
+describeEE("scenarios > embedding-sdk > native questions", () => {
   beforeEach(() => {
     signInAsAdminAndEnableEmbeddingSdk();
 
@@ -41,8 +46,45 @@ describeEE("scenarios > embedding-sdk > interactive-question > native", () => {
     mockAuthProviderAndJwtSignIn();
   });
 
-  it("supports passing sql parameters to native questions", () => {
+  it("supports passing sql parameters to interactive questions", () => {
     mountInteractiveQuestion({ initialSqlParameters: { ID: ORDERS_ID } });
+
+    cy.wait("@cardQuery").then(({ response }) => {
+      const { body } = response ?? {};
+
+      const rows = tableInteractiveBody().findAllByRole("rowgroup");
+
+      // There should be one row in the table
+      rows.should("have.length", 1);
+
+      const idColumnIndex = body.data.cols.findIndex(
+        (column: DatasetColumn) => column.name === "ID",
+      );
+
+      // The first row should have the same ID column value as the initial SQL parameters
+      rows
+        .findAllByTestId("cell-data")
+        .eq(idColumnIndex)
+        .should("have.text", String(ORDERS_ID));
+    });
+  });
+
+  it.only("supports passing sql parameters to static questions", () => {
+    cy.intercept("GET", "/api/card/*").as("getCard");
+    cy.intercept("POST", "/api/card/*/query").as("cardQuery");
+
+    cy.get<number>("@questionId").then(questionId => {
+      mountSdkContent(
+        <StaticQuestion
+          questionId={questionId}
+          initialSqlParameters={{ ID: ORDERS_ID }}
+        />,
+      );
+    });
+
+    cy.wait("@getCard").then(({ response }) => {
+      expect(response?.statusCode).to.equal(200);
+    });
 
     cy.wait("@cardQuery").then(({ response }) => {
       const { body } = response ?? {};
