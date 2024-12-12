@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import cx from "classnames";
 import type { JSX } from "react";
 import { connect } from "react-redux";

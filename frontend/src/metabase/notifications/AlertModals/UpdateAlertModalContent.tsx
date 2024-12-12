@@ -15,7 +15,7 @@ import {
   getQuestion,
   getVisualizationSettings,
 } from "metabase/query_builder/selectors";
-import { getUser, getUserIsAdmin } from "metabase/selectors/user";
+import { getUserIsAdmin } from "metabase/selectors/user";
 import type { Alert } from "metabase-types/api";
 
 import { AlertEditForm } from "./AlertEditForm";
