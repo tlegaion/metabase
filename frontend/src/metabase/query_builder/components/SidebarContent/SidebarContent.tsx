@@ -30,7 +30,10 @@ type Props = {
   "data-testid"?: string;
 };
 
-const SidebarContentMain = ({ children, ...props }: BoxProps) => {
+const SidebarContentMain = ({
+  children,
+  ...props
+}: BoxProps & { children: React.ReactNode }) => {
   return (
     <Box className={SidebarContentS.SidebarContentMain} {...props}>
       {children}
