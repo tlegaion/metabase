@@ -1,8 +1,9 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { getParameterDependencyKey } from "embedding-sdk/lib/load-question-utils";
 import { skipToken, useGetCardQuery, useGetCardQueryQuery } from "metabase/api";
 import { getTemplateTagParametersFromCard } from "metabase-lib/v1/parameters/utils/template-tags";
+import type { Card } from "metabase-types/api";
 
 interface LoadStaticQuestionParams {
   questionId: number | null;
@@ -13,8 +14,11 @@ export function useLoadStaticQuestion({
   questionId,
   initialSqlParameters,
 }: LoadStaticQuestionParams) {
+  // Card can be mutated after loading, e.g. when updating visualization types.
+  const [mutableCard, setMutableCard] = useState<Card | null>(null);
+
   const {
-    data: card,
+    data: fetchedCard,
     isLoading: isCardLoading,
     error: cardError,
   } = useGetCardQuery(questionId !== null ? { id: questionId } : skipToken);
@@ -23,8 +27,8 @@ export function useLoadStaticQuestion({
     Object.keys(initialSqlParameters ?? {}).length > 0;
 
   const cardParameters = useMemo(() => {
-    return card ? getTemplateTagParametersFromCard(card) : [];
-  }, [card]);
+    return fetchedCard ? getTemplateTagParametersFromCard(fetchedCard) : [];
+  }, [fetchedCard]);
 
   // Avoid re-running the query if the parameters haven't changed.
   const sqlParametersKey = getParameterDependencyKey(initialSqlParameters);
@@ -44,7 +48,7 @@ export function useLoadStaticQuestion({
   );
 
   const isParametersLoaded = hasSqlParameterValues
-    ? card && cardParameters.length > 0
+    ? fetchedCard && cardParameters.length > 0
     : true;
 
   const {
@@ -57,11 +61,20 @@ export function useLoadStaticQuestion({
       : skipToken,
   );
 
+  // After the card is loaded, update the mutable card.
+  useEffect(() => {
+    if (fetchedCard) {
+      setMutableCard(fetchedCard);
+    }
+  }, [fetchedCard]);
+
   return {
-    card,
+    card: mutableCard,
     queryResult,
     loading: isCardLoading || isQueryResultLoading,
     error: cardError || queryResultError,
-    updateQuestion: () => {},
+
+    // Allows the card to be updated, e.g. when updating visualization types.
+    setCard: (card: Card) => setMutableCard(card),
   };
 }

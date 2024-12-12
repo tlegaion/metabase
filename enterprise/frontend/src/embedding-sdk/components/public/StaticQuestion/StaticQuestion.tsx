@@ -80,8 +80,10 @@ const StaticQuestionInner = ({
 
   const metadata = useSelector(getMetadata);
 
-  const { card, loading, queryResult, error, updateQuestion } =
-    useLoadStaticQuestion({ questionId, initialSqlParameters });
+  const { card, loading, queryResult, error, setCard } = useLoadStaticQuestion({
+    questionId,
+    initialSqlParameters,
+  });
 
   const isLoading = loading || (!queryResult && !error) || isValidatingEntityId;
 
@@ -111,7 +113,7 @@ const StaticQuestionInner = ({
           <StaticQuestionVisualizationSelector
             question={question}
             result={queryResult ?? null}
-            onUpdateQuestion={updateQuestion}
+            onUpdateQuestion={question => setCard(question.card())}
           />
         )}
         <QueryVisualization
