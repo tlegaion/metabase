@@ -4,7 +4,14 @@ import { t } from "ttag";
 import _ from "underscore";
 
 import CS from "metabase/css/core/index.css";
-import { ActionIcon, Group, Icon, useMantineTheme } from "metabase/ui";
+import {
+  ActionIcon,
+  Group,
+  Icon,
+  Stack,
+  Text,
+  useMantineTheme,
+} from "metabase/ui";
 import { keyForSingleSeries } from "metabase/visualizations/lib/settings/series";
 import { getColumnKey } from "metabase-lib/v1/queries/utils/column-key";
 
@@ -17,6 +24,7 @@ import ChartSettingSelect from "./ChartSettingSelect";
 
 const ChartSettingFieldPicker = ({
   value,
+  label,
   options,
   onChange,
   onRemove,
@@ -78,114 +86,117 @@ const ChartSettingFieldPicker = ({
     (options.length === 1 && options[0].value === value);
 
   return (
-    <ChartSettingFieldPickerRoot
-      className={className}
-      showDragHandle={showDragHandle}
-      data-testid="chartsettings-field-picker"
-      bg="bg-white"
-      align="center"
-    >
-      <ChartSettingSelect
-        data-testid="chartsettings-field-picker-select"
-        pl="xs"
-        pr="xs"
-        w="100%"
-        isInitiallyOpen={autoOpenWhenUnset && value === undefined}
-        options={options}
-        value={value}
-        onChange={onChange}
-        icon={
-          showDragHandle || (showColorPicker && seriesKey) ? (
-            <Group noWrap spacing="xs" pl="sm" pr="xs">
-              {showDragHandle && (
-                <GrabberHandle
-                  name="grabber"
-                  noMargin
-                  onClick={e => e.stopPropagation()}
-                  c="text-medium"
-                  className={CS.pointerEventsAll}
-                />
+    <Stack spacing="xs">
+      {label && <Text fw="bold">{label}</Text>}
+      <ChartSettingFieldPickerRoot
+        className={className}
+        showDragHandle={showDragHandle}
+        data-testid="chartsettings-field-picker"
+        bg="bg-white"
+        align="center"
+      >
+        <ChartSettingSelect
+          data-testid="chartsettings-field-picker-select"
+          pl="xs"
+          pr="xs"
+          w="100%"
+          isInitiallyOpen={autoOpenWhenUnset && value === undefined}
+          options={options}
+          value={value}
+          onChange={onChange}
+          icon={
+            showDragHandle || (showColorPicker && seriesKey) ? (
+              <Group noWrap spacing="xs" pl="sm" pr="xs">
+                {showDragHandle && (
+                  <GrabberHandle
+                    name="grabber"
+                    noMargin
+                    onClick={e => e.stopPropagation()}
+                    c="text-medium"
+                    className={CS.pointerEventsAll}
+                  />
+                )}
+                {showColorPicker && seriesKey && (
+                  <ChartSettingColorPicker
+                    pillSize="small"
+                    value={colors[seriesKey]}
+                    onChange={value => {
+                      onChangeSeriesColor(seriesKey, value);
+                    }}
+                    className={CS.pointerEventsAll}
+                  />
+                )}
+              </Group>
+            ) : null
+          }
+          placeholderNoOptions={t`No valid fields`}
+          placeholder={t`Select a field`}
+          iconWidth="auto"
+          rightSectionWidth="auto"
+          rightSection={
+            <Group noWrap spacing="xs" pl="xs" pr="xs">
+              {!disabled && (
+                <ActionIcon c="text-medium" size="sm" radius="xl">
+                  <Icon name="chevrondown" />
+                </ActionIcon>
               )}
-              {showColorPicker && seriesKey && (
-                <ChartSettingColorPicker
-                  pillSize="small"
-                  value={colors[seriesKey]}
-                  onChange={value => {
-                    onChangeSeriesColor(seriesKey, value);
-                  }}
+              {menuWidgetInfo && (
+                <ActionIcon
+                  c="text-medium"
+                  size="sm"
+                  radius="xl"
+                  data-testid={`settings-${value}`}
                   className={CS.pointerEventsAll}
-                />
+                  onClick={e => {
+                    onShowWidget(menuWidgetInfo, e.target);
+                  }}
+                >
+                  <Icon name="ellipsis" />
+                </ActionIcon>
+              )}
+              {onRemove && (
+                <ActionIcon
+                  c="text-medium"
+                  size="sm"
+                  radius="xl"
+                  data-testid={`remove-${value}`}
+                  onClick={onRemove}
+                  className={CS.pointerEventsAll}
+                >
+                  <Icon name="close" />
+                </ActionIcon>
               )}
             </Group>
-          ) : null
-        }
-        placeholderNoOptions={t`No valid fields`}
-        placeholder={t`Select a field`}
-        iconWidth="auto"
-        rightSectionWidth="auto"
-        rightSection={
-          <Group noWrap spacing="xs" pl="xs" pr="sm">
-            {!disabled && (
-              <ActionIcon c="text-medium" size="sm" radius="xl">
-                <Icon name="chevrondown" />
-              </ActionIcon>
-            )}
-            {menuWidgetInfo && (
-              <ActionIcon
-                c="text-medium"
-                size="sm"
-                radius="xl"
-                data-testid={`settings-${value}`}
-                className={CS.pointerEventsAll}
-                onClick={e => {
-                  onShowWidget(menuWidgetInfo, e.target);
-                }}
-              >
-                <Icon name="ellipsis" />
-              </ActionIcon>
-            )}
-            {onRemove && (
-              <ActionIcon
-                c="text-medium"
-                size="sm"
-                radius="xl"
-                data-testid={`remove-${value}`}
-                onClick={onRemove}
-                className={CS.pointerEventsAll}
-              >
-                <Icon name="close" />
-              </ActionIcon>
-            )}
-          </Group>
-        }
-        styles={{
-          wrapper: {
-            display: "flex",
-          },
-          icon: {
-            position: "static",
-            width: "auto",
-          },
-          input: {
-            "&[data-with-icon]": {
-              paddingLeft: 0,
+          }
+          styles={{
+            wrapper: {
+              display: "flex",
             },
-            marginLeft: theme.spacing.xs,
-            textOverflow: "ellipsis",
-            fontWeight: "bold",
-            "&[data-disabled]": {
-              backgroundColor: "var(--mb-color-bg-white) !important",
+            icon: {
+              position: "static",
+              width: "auto",
             },
-            border: "none",
-            width: "auto",
-            lineHeight: theme.lineHeight,
-          },
-          rightSection: {
-            pointerEvents: "none",
-          },
-        }}
-      />
-    </ChartSettingFieldPickerRoot>
+            input: {
+              "&[data-with-icon]": {
+                paddingLeft: 0,
+              },
+              marginLeft: theme.spacing.xs,
+              textOverflow: "ellipsis",
+              fontWeight: "bold",
+              "&[data-disabled]": {
+                backgroundColor: "var(--mb-color-bg-white) !important",
+              },
+              border: "none",
+              width: "auto",
+              lineHeight: theme.lineHeight,
+            },
+            rightSection: {
+              pointerEvents: "none",
+            },
+          }}
+        />
+      </ChartSettingFieldPickerRoot>
+    </Stack>
   );
 };
 
