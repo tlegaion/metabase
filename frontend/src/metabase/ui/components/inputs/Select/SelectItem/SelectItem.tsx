@@ -40,7 +40,6 @@ export const SelectItem = forwardRef(function SelectItem(
       p="sm"
       gap="sm"
       flex={1}
-      role="option"
       aria-selected={selected}
       {...props}
     >

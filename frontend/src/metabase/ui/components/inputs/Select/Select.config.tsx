@@ -17,6 +17,7 @@ export const selectOverrides = {
       },
       comboboxProps: {
         withinPortal: true,
+        keepMounted: false,
       },
     },
     classNames: {

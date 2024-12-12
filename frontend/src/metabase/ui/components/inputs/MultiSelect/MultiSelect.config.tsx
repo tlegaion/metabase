@@ -18,7 +18,7 @@ export const multiSelectOverrides = {
       withScrollArea: false,
       comboboxProps: {
         withinPortal: true,
-        keepMounted: true,
+        keepMounted: false,
       },
       clearButtonProps: {
         color: "text-dark",
