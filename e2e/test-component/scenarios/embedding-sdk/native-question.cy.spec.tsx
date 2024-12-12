@@ -1,3 +1,5 @@
+import { StaticQuestion } from "@metabase/embedding-sdk-react";
+
 import { SAMPLE_DATABASE } from "e2e/support/cypress_sample_database";
 import {
   createNativeQuestion,
@@ -11,10 +13,6 @@ import {
   signInAsAdminAndEnableEmbeddingSdk,
 } from "e2e/support/helpers/component-testing-sdk";
 import type { DatasetColumn } from "metabase-types/api";
-import {
-  InteractiveQuestion,
-  StaticQuestion,
-} from "@metabase/embedding-sdk-react";
 
 const { ORDERS, ORDERS_ID } = SAMPLE_DATABASE;
 
@@ -69,7 +67,7 @@ describeEE("scenarios > embedding-sdk > native questions", () => {
     });
   });
 
-  it.only("supports passing sql parameters to static questions", () => {
+  it("supports passing sql parameters to static questions", () => {
     cy.intercept("GET", "/api/card/*").as("getCard");
     cy.intercept("POST", "/api/card/*/query").as("cardQuery");
 

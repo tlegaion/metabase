@@ -37,12 +37,18 @@ export function useLoadStaticQuestion({
     [card?.parameters, sqlParameterKey],
   );
 
+  const hasSqlParameters = Object.keys(initialSqlParameters ?? {}).length > 0;
+
+  const isSqlParametersLoaded = hasSqlParameters
+    ? (card?.parameters ?? [])?.length > 0
+    : true;
+
   const {
     data: queryResult,
     isLoading: isQueryResultLoading,
     error: queryResultError,
   } = useGetCardQueryQuery(
-    questionId !== null
+    questionId !== null && isSqlParametersLoaded
       ? { cardId: questionId, ...(parameters ? { parameters } : {}) }
       : skipToken,
   );
