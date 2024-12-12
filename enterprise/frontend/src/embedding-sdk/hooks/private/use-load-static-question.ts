@@ -1,87 +1,57 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 
-import { loadStaticQuestion } from "embedding-sdk/lib/load-static-question";
-import type { GenericErrorResponse } from "metabase/lib/errors";
-import { defer } from "metabase/lib/promise";
-import type Question from "metabase-lib/v1/Question";
-import type { Card, Dataset } from "metabase-types/api";
+import { getParameterDependencyKey } from "embedding-sdk/lib/load-question-utils";
+import { skipToken, useGetCardQuery, useGetCardQueryQuery } from "metabase/api";
 
-type QuestionState = {
-  loading: boolean;
-  card: Card | null;
-  result: Dataset | null;
-  error: GenericErrorResponse | null;
-};
+interface LoadStaticQuestionParams {
+  questionId: number | null;
+  initialSqlParameters?: Record<string, string | number>;
+}
 
-export function useLoadStaticQuestion(
-  questionId: number | null,
-  initialSqlParameters?: Record<string, string | number>,
-) {
-  const [questionState, setQuestionState] = useState<QuestionState>({
-    loading: false,
-    card: null,
-    result: null,
-    error: null,
-  });
+export function useLoadStaticQuestion({
+  questionId,
+  initialSqlParameters,
+}: LoadStaticQuestionParams) {
+  const {
+    data: card,
+    isLoading: isCardLoading,
+    error: cardError,
+  } = useGetCardQuery(questionId !== null ? { id: questionId } : skipToken);
 
-  const updateQuestion = (newQuestion: Question) =>
-    setQuestionState(state => ({
-      ...state,
-      card: newQuestion.card(),
-      loading: false,
-      error: null,
-    }));
+  // Avoid re-running the query if the parameters haven't changed.
+  const sqlParameterKey = getParameterDependencyKey(initialSqlParameters);
 
-  useEffect(() => {
-    const cancelDeferred = defer();
-    let ignore = false; // flag to ignore the result if the component unmounts: https://react.dev/learn/you-might-not-need-an-effect#fetching-data
+  const parameters = useMemo(
+    () => {
+      return (card?.parameters ?? [])
+        .filter(parameter => parameter.target)
+        .map(parameter => ({
+          id: parameter.id,
+          type: parameter.type,
+          target: parameter.target!,
+          value: initialSqlParameters?.[parameter.slug],
+        }));
+    },
+    // sqlParameterKeys prevents "parameters" from changing every render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [card, sqlParameterKey],
+  );
 
-    async function loadCardData() {
-      setQuestionState(state => ({ ...state, loading: true }));
+  const {
+    data: queryResult,
+    isLoading: isQueryResultLoading,
+    error: queryResultError,
+  } = useGetCardQueryQuery(
+    questionId !== null
+      ? { cardId: questionId, ...(parameters ? { parameters } : {}) }
+      : skipToken,
+  );
 
-      if (!questionId) {
-        return;
-      }
-
-      try {
-        const { card, result } = await loadStaticQuestion({
-          questionId,
-          sqlParameters: initialSqlParameters,
-          cancelDeferred,
-        });
-
-        if (!ignore) {
-          setQuestionState({
-            card,
-            result,
-            loading: false,
-            error: null,
-          });
-        }
-      } catch (error) {
-        if (typeof error === "object") {
-          if (!ignore) {
-            setQuestionState({
-              result: null,
-              card: null,
-              loading: false,
-              error,
-            });
-          }
-        } else {
-          console.error("error loading static question", error);
-        }
-      }
-    }
-
-    loadCardData();
-
-    return () => {
-      // cancel pending requests upon unmount
-      cancelDeferred.resolve();
-      ignore = true;
-    };
-  }, [questionId, initialSqlParameters]);
-
-  return { ...questionState, updateQuestion };
+  return {
+    card,
+    queryResult,
+    loading: isCardLoading || isQueryResultLoading,
+    error: cardError || queryResultError,
+    updateQuestion: () => {},
+  };
 }
