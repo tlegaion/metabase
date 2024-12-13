@@ -47,9 +47,7 @@ export function useLoadStaticQuestion({
     [cardParameters, sqlParametersKey],
   );
 
-  const isParametersLoaded = hasSqlParameterValues
-    ? fetchedCard && cardParameters.length > 0
-    : true;
+  const isParametersLoaded = !hasSqlParameterValues || !!fetchedCard;
 
   const {
     data: queryResult,
