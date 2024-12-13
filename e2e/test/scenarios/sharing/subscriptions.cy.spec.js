@@ -780,7 +780,7 @@ function addParametersToDashboard() {
   // add default value to the above filter
   cy.findByText("No default").click();
   H.popover().within(() => {
-    H.multiAutocompleteInput().type("Corbin");
+    H.fieldValuesInput().type("Corbin");
   });
 
   H.popover().last().findByText("Corbin Mertz").click();
