@@ -561,6 +561,7 @@ export const PLUGIN_AUDIT = {
 
 export const PLUGIN_UPLOAD_MANAGEMENT = {
   UploadManagementTable: PluginPlaceholder,
+  GSheetManagement: PluginPlaceholder,
 };
 
 export const PLUGIN_IS_EE_BUILD = {
