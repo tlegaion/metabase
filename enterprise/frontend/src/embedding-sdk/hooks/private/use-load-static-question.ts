@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { getParameterDependencyKey } from "embedding-sdk/lib/load-question-utils";
 import { skipToken, useGetCardQuery, useGetCardQueryQuery } from "metabase/api";
+import { isNullOrUndefined } from "metabase/lib/types";
 import { getTemplateTagParametersFromCard } from "metabase-lib/v1/parameters/utils/template-tags";
 import type { Card } from "metabase-types/api";
 
@@ -21,7 +22,9 @@ export function useLoadStaticQuestion({
     data: fetchedCard,
     isLoading: isCardLoading,
     error: cardError,
-  } = useGetCardQuery(questionId !== null ? { id: questionId } : skipToken);
+  } = useGetCardQuery(
+    !isNullOrUndefined(questionId) ? { id: questionId } : skipToken,
+  );
 
   const hasSqlParameterValues =
     Object.keys(initialSqlParameters ?? {}).length > 0;
@@ -55,7 +58,7 @@ export function useLoadStaticQuestion({
     isLoading: isQueryResultLoading,
     error: queryResultError,
   } = useGetCardQueryQuery(
-    questionId !== null && isParametersEmptyOrReady
+    !isNullOrUndefined(questionId) && isParametersEmptyOrReady
       ? { cardId: questionId, ...(parameters ? { parameters } : {}) }
       : skipToken,
   );
