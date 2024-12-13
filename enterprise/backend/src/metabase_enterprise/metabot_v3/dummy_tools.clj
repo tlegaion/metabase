@@ -100,6 +100,31 @@
       (get-table-details :get-table-details {:table_id id} {})))
   -)
 
+(defn- get-metric-details
+  [_ {:keys [metric_id]} context]
+  (let [details (card-details metric_id)
+        date-field-id (:id (first (filter #(= (:type %) "date") (:fields details))))
+        details' (some-> details
+                         (assoc :queryable_dimensions (:fields details)
+                                :default_time_dimension_field_id date-field-id)
+                         (select-keys [:id :description :name :default_time_dimension_field_id :queryable_dimensions]))]
+    {:output (or details' "metric not found")
+     :context context}))
+
+(defn- get-report-details
+  [_ {:keys [report_id]} context]
+  (let [details (card-details report_id)
+        details' (some-> details
+                         (assoc :result_columns (:fields details))
+                         (select-keys [:id :description :name :result_columns]))]
+    {:output (or details' "report not found")
+     :context context}))
+
+(comment
+  (binding [api/*current-user-permissions-set* (delay #{"/"})]
+    (let [id "card__90" #_"card__136" #_"27"]
+      (get-table-details :get-table-details {:table_id id} {}))))
+
 (defn- dummy-tool-messages
   [tool-id arguments content]
   (let [call-id (random-uuid)]
@@ -129,7 +154,13 @@
    :model {:id :get-table-details
            :fn (fn [tool-id args context]
                  (get-table-details tool-id (update args :table_id #(str "card__" %)) context))
-           :id-name :table_id}})
+           :id-name :table_id}
+   :metric {:id :get-metric-details
+            :fn get-metric-details
+            :id-name :metric_id}
+   :report {:id :get-report-details
+            :fn get-report-details
+            :id-name :report_id}})
 
 (defn- dummy-get-item-details
   [context]
@@ -160,7 +191,9 @@
                                        {:type :table
                                         :ref 27}
                                        {:type :model
-                                        :ref 137}]})]
+                                        :ref 137}
+                                       {:type :report
+                                        :ref 89}]})]
     (reduce (fn [messages tool]
               (into messages (tool context)))
             []
