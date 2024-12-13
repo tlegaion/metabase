@@ -32,12 +32,22 @@ describeEE("scenarios > embedding-sdk > static-question", () => {
     mockAuthProviderAndJwtSignIn();
   });
 
-  it("should show question content", () => {
+  it("should show the question's table visualization", () => {
     mountStaticQuestion();
 
     getSdkRoot().within(() => {
       cy.findByText("Product ID").should("be.visible");
       cy.findByText("Max of Quantity").should("be.visible");
+    });
+  });
+
+  it("is able to change visualization types", () => {
+    mountStaticQuestion({ withChartTypeSelector: true });
+
+    getSdkRoot().within(() => {
+      cy.findByTestId("chart-container").should("not.exist");
+      cy.findByTestId("Bar-button").click();
+      cy.findByTestId("chart-container").should("be.visible");
     });
   });
 });
