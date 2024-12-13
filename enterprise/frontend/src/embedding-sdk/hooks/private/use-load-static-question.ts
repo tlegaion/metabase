@@ -26,35 +26,36 @@ export function useLoadStaticQuestion({
   const hasSqlParameterValues =
     Object.keys(initialSqlParameters ?? {}).length > 0;
 
-  const cardParameters = useMemo(() => {
-    return fetchedCard ? getTemplateTagParametersFromCard(fetchedCard) : [];
-  }, [fetchedCard]);
-
   // Avoid re-running the query if the parameters haven't changed.
   const sqlParametersKey = getParameterDependencyKey(initialSqlParameters);
 
   const parameters = useMemo(
-    () =>
-      cardParameters
+    () => {
+      if (!fetchedCard) {
+        return null;
+      }
+
+      return getTemplateTagParametersFromCard(fetchedCard)
         .filter(parameter => parameter.target)
         .map(parameter => ({
           id: parameter.id,
           type: parameter.type,
           target: parameter.target,
           value: initialSqlParameters?.[parameter.slug],
-        })),
+        }));
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [cardParameters, sqlParametersKey],
+    [fetchedCard, sqlParametersKey],
   );
 
-  const isParametersLoaded = !hasSqlParameterValues || !!fetchedCard;
+  const isParametersEmptyOrReady = !hasSqlParameterValues || !!fetchedCard;
 
   const {
     data: queryResult,
     isLoading: isQueryResultLoading,
     error: queryResultError,
   } = useGetCardQueryQuery(
-    questionId !== null && isParametersLoaded
+    questionId !== null && isParametersEmptyOrReady
       ? { cardId: questionId, ...(parameters ? { parameters } : {}) }
       : skipToken,
   );
