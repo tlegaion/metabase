@@ -4,12 +4,14 @@
    [metabase-enterprise.metabot-v3.tools.create-dashboard-subscription]
    [metabase-enterprise.metabot-v3.tools.query]
    [metabase-enterprise.metabot-v3.tools.who-is-your-favorite]
+   [metabase-enterprise.metabot-v3.tools.query-metric :as tools.query-metric]
    [metabase.api.common :as api]
    [metabase.api.table :as api.table]
    [metabase.lib.types.isa :as lib.types.isa]
    [metabase.models.interface :as mi]
    [metabase.util :as u]
-   [toucan2.core :as t2]))
+   [toucan2.core :as t2]
+   [metabase.lib.core :as lib]))
 
 (defn- get-current-user
   [_ _ context]
@@ -85,6 +87,11 @@
             (update :metrics #(mapv convert-metric %))
             (assoc :queryable_foreign_key_tables (foreign-key-tables fields)))))
 
+(defn- visible-columns [query]
+  (-> (lib.metadata.jvm/application-database-metadata-provider (:database query))
+      (lib/query query)
+      (lib/breakoutable-columns)))
+
 (defn- get-table-details
   [_ {:keys [table_id]} context]
   (let [details (if-let [[_ card-id] (re-matches #"card__(\d+)" table_id)]
@@ -105,7 +112,7 @@
   (let [details (card-details metric_id)
         date-field-id (:id (first (filter #(= (:type %) "date") (:fields details))))
         details' (some-> details
-                         (assoc :queryable_dimensions (:fields details)
+                         (assoc :queryable_dimensions (map convert-field (visible-columns (:dataset_query (t2/select-one :model/Card metric_id))))
                                 :default_time_dimension_field_id date-field-id)
                          (select-keys [:id :description :name :default_time_dimension_field_id :queryable_dimensions]))]
     {:output (or details' "metric not found")
